@@ -1,17 +1,30 @@
-/*--- reset ---*/
+/*--- background ---*/
 
 body, div, p, h1, h2, h3 {
 	padding: 0;
 	margin: 0;
 }
 
-
-/*--- background ---*/
-
 body {
+  font-family: sans-serif;
+}
+
+h1 {
+  color: #666;
 }
 
 #wrapper {
+  margin: 10px 30px;
+  position: relative;
+}
+
+#stopwatch {
+  position: absolute;
+  top: 10px;
+  left: 500px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #888;
 }
 
 
