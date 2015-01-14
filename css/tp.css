@@ -1,0 +1,23 @@
+/*--- reset ---*/
+
+body, div, p, h1, h2, h3 {
+	padding: 0;
+	margin: 0;
+}
+
+
+/*--- background ---*/
+
+body {
+}
+
+#wrapper {
+}
+
+
+/*--- graphics ---*/
+
+canvas {
+  border: 1px solid #999;
+}
+
