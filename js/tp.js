@@ -63,6 +63,12 @@ TypingPteranodon.load = function () {
   g.finishY = 645;
   g.level = g.makeLevel();
   g.stopwatch = document.getElementById('stopwatch');
+
+  window.onkeydown = function (event) {
+    var code = event.keyCode;
+    console.log(code);
+  }
+
   g.play();
 };
 
