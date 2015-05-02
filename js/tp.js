@@ -64,9 +64,11 @@ TypingPteranodon.load = function () {
   g.level = g.makeLevel();
   g.stopwatch = document.getElementById('stopwatch');
 
-  window.onkeydown = function (event) {
-    var code = event.keyCode;
-    console.log(code);
+  var input = document.getElementById('typing');
+  input.focus();
+
+  input.onkeydown = function (event) {
+    console.log('tap');
   }
 
   g.play();
