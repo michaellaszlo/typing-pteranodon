@@ -64,11 +64,17 @@ TypingPteranodon.load = function () {
   g.level = g.makeLevel();
   g.stopwatch = document.getElementById('stopwatch');
 
-  var input = document.getElementById('typing');
-  input.focus();
+  var typing = g.typing = {
+    input: document.getElementById('typingInput'),
+    display: document.getElementById('typingDisplay')
+  };
 
-  input.onkeydown = function (event) {
-    console.log('tap');
+  typing.input.focus();
+  typing.input.onblur = function () {
+    typing.input.focus();
+  }
+  typing.input.onkeydown = function () {
+    typing.display.innerHTML = typing.input.value;
   }
 
   g.play();
