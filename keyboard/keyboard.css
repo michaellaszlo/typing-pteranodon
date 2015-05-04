@@ -1,0 +1,78 @@
+body {
+}
+div, ul, li {
+	margin: 0;
+	padding: 0;
+}
+
+#wrapper {
+}
+
+#line {
+	width: 993px;
+	height: 40px;
+	border: 1px solid #888;
+	font-size: 28px;
+	color: #444;
+	position: relative;
+	margin-bottom: 10px;
+}
+#lineContents {
+	position: relative;
+	left: 10px;
+}
+
+#keyboard table {
+	border-collapse: collapse;
+	font-weight: normal;
+}
+#keyboard ul {
+	list-style: none;
+}
+#keyboard li {
+	display: inline-block;
+	border: 2px solid #ddd;
+	height: 60px;
+	width: 60px;
+	position: relative;
+	font-size: 28px;
+	color: #666;
+	margin-right: 3px;
+}
+#keyboard .normal {
+	position: absolute;
+	top: 22px;
+	left: 10px;
+}
+#keyboard .shifted {
+	position: absolute;
+	top: 5px;
+	left: 12px;
+	color: #333;
+	font-size: 12px;
+}
+#keyboard .special .normal {
+	font-size: 18px;
+}
+#keyboard .backspace {
+	width: 120px;
+}
+#keyboard .tab {
+	width: 100px;
+}
+#keyboard .backslash {
+	width: 80px;
+}
+#keyboard .capslock {
+	width: 115px;
+}
+#keyboard .enter {
+	width: 132px;
+}
+#keyboard .shift {
+	width: 157px;
+}
+#keyboard .spacebar {
+	width: 388px;
+	left: 270px;
+}
