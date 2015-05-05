@@ -52,6 +52,13 @@ TypingPteranodon.update = function () {
   g.stopwatch.innerHTML = Math.floor(g.ticks/60);
 }
 
+TypingPteranodon.focus = function () {
+  var g = TypingPteranodon,
+      typing = g.typing;
+  console.log('focus');
+  typing.input.focus();
+};
+
 TypingPteranodon.load = function () {
   var g = TypingPteranodon,
       canvas = g.canvas = document.getElementById('mainCanvas');
@@ -71,7 +78,11 @@ TypingPteranodon.load = function () {
 
   typing.input.focus();
   typing.input.onblur = function () {
-    typing.input.focus();
+    console.log('blur');
+    g.focus();
+  }
+  typing.input.onfocus = function () {
+    g.focus();
   }
   typing.input.onkeydown = function () {
     typing.display.innerHTML = typing.input.value;
