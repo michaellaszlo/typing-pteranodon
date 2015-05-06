@@ -19,16 +19,28 @@ TypingPteranodon.makeLevel = function () {
   return level;
 };
 
-TypingPteranodon.play = function () {
+TypingPteranodon.nextWord = function () {
   var g = TypingPteranodon,
       level = g.level,
       context = g.canvas.context,
-      word = g.word = {};
-  word.text = level.words[0]; 
+      word = g.word,
+      wordIndex = ++g.wordIndex;
+  if (wordIndex == level.numWords) {
+    g.stop();
+  }
+  word.text = level.words[wordIndex]; 
   word.width = context.measureText(word.text).width;
   word.x = (g.width - word.width) / 2;
   word.y = g.startY;
+};
+
+TypingPteranodon.play = function () {
+  var g = TypingPteranodon,
+      level = g.level = g.makeLevel(),
+      word = g.word = {};
   word.speed = (g.finishY - g.startY) / (level.sloth * g.hertz);
+  g.wordIndex = -1;
+  g.nextWord();
   g.ticks = 0;
   g.updateInterval = window.setInterval(g.update, 1000/g.hertz);
 }
@@ -46,17 +58,17 @@ TypingPteranodon.update = function () {
   context.fillText(word.text, word.x, word.y);
   word.y += word.speed;
   if (word.y >= g.finishY) {
-    g.stop();
+    g.nextWord();
   }
   g.ticks += 1;
-  g.stopwatch.innerHTML = Math.floor(g.ticks/60);
+  g.stopwatch.innerHTML = Math.floor(g.ticks/g.hertz);
+  g.typing.display.innerHTML = g.typing.input.value;
 }
 
 TypingPteranodon.focus = function () {
   var g = TypingPteranodon,
       typing = g.typing;
-  console.log('focus');
-  typing.input.focus();
+  console.log('focused');
 };
 
 TypingPteranodon.load = function () {
@@ -68,7 +80,6 @@ TypingPteranodon.load = function () {
   context.font = '30px sans-serif';
   g.startY = -15;
   g.finishY = 645;
-  g.level = g.makeLevel();
   g.stopwatch = document.getElementById('stopwatch');
 
   var typing = g.typing = {
@@ -78,15 +89,11 @@ TypingPteranodon.load = function () {
 
   typing.input.focus();
   typing.input.onblur = function () {
-    console.log('blur');
-    g.focus();
-  }
+    typing.input.focus();
+  };
   typing.input.onfocus = function () {
     g.focus();
-  }
-  typing.input.onkeydown = function () {
-    typing.display.innerHTML = typing.input.value;
-  }
+  };
 
   g.play();
 };

@@ -32,33 +32,36 @@ h1 {
 
 canvas {
   border: 1px solid #999;
+  position: fixed;
+  top: 50px;
+  left: 50px;
 }
 
 
 /*--- typing ---*/
 
 #typingDisplay {
-  border: 1px dotted #ccc;
+  border: 2px solid #ddd;
+  padding: 8px 14px 2px;
   font-size: 36px;
-  color: #222;
-  width: 600px;
+  width: 500px;
   height: 50px;
-  background: #fff;
+  background: #ffe;
+  color: #222;
 }
 #typingDisplay, #typingInput {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
+  bottom: 80px;
+  left: 75px;
+  outline: none;
 }
 #typingInput {
   z-index: -10;
-  width: 600px;
+  width: 500px;
   height: 50px;
-  color: #888;
-  border: 0;
+  color: #444;
+  font-size: 18px;
+  padding: 8px 14px 2px;
+  border: 1px solid #eee;
 }
-#typingInput:focus {
-  outline: none;
-}
-
 
