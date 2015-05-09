@@ -62,13 +62,17 @@ TypingPteranodon.update = function () {
   }
   g.ticks += 1;
   g.stopwatch.innerHTML = Math.floor(g.ticks/g.hertz);
-  g.typing.display.innerHTML = g.typing.input.value;
+  var attempt = g.typing.input.value;
+  g.typing.display.innerHTML = attempt;
+  for (var i = 0; i < word.length && i < attempt.length; ++i) {
+    var c = word.charAt(i),
+        d = attempt.charAt(i);
+  }
 }
 
 TypingPteranodon.focus = function () {
   var g = TypingPteranodon,
       typing = g.typing;
-  console.log('focused');
 };
 
 TypingPteranodon.load = function () {
