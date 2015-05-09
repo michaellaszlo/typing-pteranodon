@@ -30,7 +30,7 @@ h1 {
 
 /*--- graphics ---*/
 
-canvas {
+#gameContainer {
   border: 1px solid #999;
   position: fixed;
   top: 50px;
@@ -41,27 +41,22 @@ canvas {
 /*--- typing ---*/
 
 #typingDisplay {
-  border: 2px solid #ddd;
-  padding: 8px 14px 2px;
-  font-size: 36px;
-  width: 500px;
-  height: 50px;
   background: #ffe;
-  color: #222;
+  border: 2px solid #ddd;
 }
 #typingDisplay, #typingInput {
   position: fixed;
   bottom: 80px;
   left: 75px;
-  outline: none;
 }
 #typingInput {
+  outline: none;
   z-index: -10;
-  width: 500px;
-  height: 50px;
-  color: #444;
-  font-size: 18px;
-  padding: 8px 14px 2px;
-  border: 1px solid #eee;
+  width: 200px;
+  height: 20px;
+  background: #000;
+  color: #fff;
+  font-size: 12px;
+  border: none;
 }
 
