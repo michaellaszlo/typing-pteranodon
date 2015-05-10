@@ -1,10 +1,17 @@
 + render input to a canvas
 + render the word to a canvas and copy to animate
 + debug input-focusing in Firefox and Safari
++ try double-buffering to improve chute performance
++ animate with requestAnimationFrame
 
-- try double-buffering to improve chute performance
 - render word prefixes in a different color
 - improve game layout
 - improve refocusing
 - test with IE
+
+- use a shim for requestAnimationFrame
+  http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+- consider other performance tips
+  http://www.html5rocks.com/en/tutorials/canvas/performance/
+
 

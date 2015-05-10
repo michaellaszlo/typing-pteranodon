@@ -22,7 +22,6 @@ TypingPteranodon.makeLevel = function () {
     var index = Math.floor(Math.random() * dictionary.length);
     words.push(dictionary[index]);
   }
-  level.sloth = 5;
   return level;
 };
 
@@ -38,8 +37,6 @@ TypingPteranodon.nextWord = function () {
   }
   word.text = level.words[wordIndex]; 
   word.width = Math.ceil(context.chute[0].measureText(word.text).width);
-  word.x = (g.layout.chute.width - word.width) / 2;
-  word.y = g.startY;
 
   // Measure the height of the word.
   context.stage.clearRect(0, 0, canvas.stage.width, canvas.stage.height);
@@ -64,44 +61,50 @@ TypingPteranodon.nextWord = function () {
     }
   }
   word.height = word.lastRow - word.firstRow + 1;
+
+  word.x = Math.floor((g.layout.chute.width - word.width) / 2);
+  word.y = -word.height;
 };
 
 TypingPteranodon.play = function () {
   var g = TypingPteranodon,
       level = g.level = g.makeLevel(),
       word = g.word = {};
-  word.speed = (g.finishY - g.startY) / (level.sloth * g.hertz);
+  word.speed = 2;
+  console.log(word.speed);
   g.wordIndex = -1;
   g.nextWord();
   g.ticks = 0;
-  g.interval = { chute: window.setInterval(g.update.chute, 1000/g.hertz) };
+  g.playing = true;
+  window.requestAnimationFrame(g.update.chute);
 }
 
 TypingPteranodon.stop = function () {
   var g = TypingPteranodon;
-  window.clearTimeout(g.interval.chute);
+  g.playing = false;
 };
 
 TypingPteranodon.update.chute = function () {
-  var g = TypingPteranodon,
-      word = g.word,
+  var g = TypingPteranodon;
+  if (!g.playing) {
+    return;
+  }
+  var word = g.word,
       currIndex = g.chute.index,
-      nextIndex = (currIndex == 0 ? 1 : 0),
-      chuteCanvas = g.canvas.chute[nextIndex],
+      chuteCanvas = g.canvas.chute[currIndex],
       context = g.context,
-      chuteContext = context.chute[nextIndex];
+      chuteContext = context.chute[currIndex];
   g.ticks += 1;
-  chuteContext.clearRect(0, 0, chuteCanvas.width, chuteCanvas.height);
+  chuteContext.clearRect(word.x, word.oldY, word.width, word.height);
   chuteContext.drawImage(g.canvas.stage,
       0, word.firstRow, word.width, word.height,
       word.x, word.y, word.width, word.height);
-  chuteCanvas.style.display = 'block';
-  g.canvas.chute[currIndex].style.display = 'none';
-  g.chute.index = nextIndex;
+  word.oldY = word.y;
   word.y += word.speed;
   if (word.y >= g.finishY) {
     g.nextWord();
   }
+  window.requestAnimationFrame(g.update.chute);
 };
 
 TypingPteranodon.update.typing = function () {
@@ -153,6 +156,8 @@ TypingPteranodon.load = function () {
       },
       input = g.input = g.make('input', { id: 'typingInput', in: wrapper }),
       layout = g.layout;
+  container.style.width = g.layout.chute.width + 'px';
+  container.style.height = g.layout.chute.height + 'px';
   canvas.chute[1].width = canvas.chute[0].width = g.layout.chute.width;
   canvas.chute[1].height = canvas.chute[0].height = g.layout.chute.height;
   canvas.stage.width = canvas.typing.width = g.layout.chute.width;
@@ -185,16 +190,14 @@ TypingPteranodon.load = function () {
     window.setTimeout(function () {
       canvas.typing.className = 'focused';
       input.focus();
-      console.log('refocused');
     }, 20);
   }
-  canvas.typing.onmousedown =
-      canvas.chute[1].onmousedown = canvas.chute[0].refocus;
+  canvas.chute[1].onmousedown = canvas.chute[0].onmousedown =
+      canvas.typing.onmousedown = refocus;
   refocus();
   g.chute = { index: 0 };
   g.canvas.chute[1].style.display = 'none';
 
-  g.startY = 0;
   g.finishY = layout.chute.height;
   g.play();
 };
