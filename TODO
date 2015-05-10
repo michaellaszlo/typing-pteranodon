@@ -1,8 +1,10 @@
 + render input to a canvas
 + render the word to a canvas and copy to animate
++ debug input-focusing in Firefox and Safari
 
-- debug input focusing in Firefox and Safari
-- test with IE
 - try double-buffering to improve chute performance
 - render word prefixes in a different color
+- improve game layout
+- improve refocusing
+- test with IE
 

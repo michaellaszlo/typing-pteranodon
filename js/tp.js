@@ -167,9 +167,19 @@ TypingPteranodon.load = function () {
       Math.floor((g.layout.typing.height - g.font.size.pixels)/2)
   };
 
-  input.focus();
-  input.onblur = input.focus;
   input.oninput = g.update.typing;
+  input.onblur = function () {
+    canvas.typing.className = '';
+  };
+  function refocus() {
+    window.setTimeout(function () {
+      canvas.typing.className = 'focused';
+      input.focus();
+      console.log('refocused');
+    }, 20);
+  }
+  canvas.typing.onmousedown = canvas.chute.onmousedown = refocus;
+  refocus();
 
   g.startY = 0;
   g.finishY = layout.chute.height;
