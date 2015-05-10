@@ -50,24 +50,20 @@ TypingPteranodon.nextWord = function () {
   for (var i = 3; ; i += 4) {  // Seek forward for a non-transparent pixel.
     if (testData[i] != 0) {
       var x = (i-3)/4,
-          c = x % testWidth,
-          firstRow = (x-c) / testWidth;
+          c = x % testWidth;
+      word.firstRow = (x-c) / testWidth;
       break;
     }
   }
   for (var i = 4*testWidth*testHeight - 1; ; i -= 4) {  // Seek backward.
     if (testData[i] != 0) {
       var x = (i-3)/4,
-          c = x % testWidth,
-          lastRow = (x-c) / testWidth;
+          c = x % testWidth;
+      word.lastRow = (x-c) / testWidth;
       break;
     }
   }
-  word.height = lastRow-firstRow+1;
-  context.stage.fillStyle = '#edb0b0';
-  context.stage.fillRect(0, firstRow, word.width, word.height);
-  context.stage.fillStyle = 'black';
-  context.stage.fillText(word.text, 0, g.font.base.top);
+  word.height = word.lastRow - word.firstRow + 1;
 };
 
 TypingPteranodon.play = function () {
@@ -92,9 +88,10 @@ TypingPteranodon.update.chute = function () {
       chuteCanvas = g.canvas.chute,
       chuteContext = g.context.chute;
   g.ticks += 1;
-  g.stopwatch.innerHTML = Math.floor(g.ticks/g.hertz);
   chuteContext.clearRect(0, 0, chuteCanvas.width, chuteCanvas.height);
-  chuteContext.fillText(word.text, word.x, word.y);
+  chuteContext.drawImage(g.canvas.stage,
+      0, word.firstRow, word.width, word.height,
+      word.x, word.y, word.width, word.height);
   word.y += word.speed;
   if (word.y >= g.finishY) {
     g.nextWord();
@@ -147,7 +144,6 @@ TypingPteranodon.load = function () {
         typing: canvas.typing.getContext('2d')
       },
       input = g.input = g.make('input', { id: 'typingInput', in: wrapper }),
-      stopwatch = g.stopwatch = g.make('div', { id: 'stopwatch', in: wrapper }),
       layout = g.layout;
   canvas.chute.width = g.layout.chute.width;
   canvas.chute.height = g.layout.chute.height;
