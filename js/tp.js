@@ -37,7 +37,7 @@ TypingPteranodon.nextWord = function () {
     g.stop();
   }
   word.text = level.words[wordIndex]; 
-  word.width = Math.ceil(context.chute.measureText(word.text).width);
+  word.width = Math.ceil(context.chute[0].measureText(word.text).width);
   word.x = (g.layout.chute.width - word.width) / 2;
   word.y = g.startY;
 
@@ -85,13 +85,19 @@ TypingPteranodon.stop = function () {
 TypingPteranodon.update.chute = function () {
   var g = TypingPteranodon,
       word = g.word,
-      chuteCanvas = g.canvas.chute,
-      chuteContext = g.context.chute;
+      currIndex = g.chute.index,
+      nextIndex = (currIndex == 0 ? 1 : 0),
+      chuteCanvas = g.canvas.chute[nextIndex],
+      context = g.context,
+      chuteContext = context.chute[nextIndex];
   g.ticks += 1;
   chuteContext.clearRect(0, 0, chuteCanvas.width, chuteCanvas.height);
   chuteContext.drawImage(g.canvas.stage,
       0, word.firstRow, word.width, word.height,
       word.x, word.y, word.width, word.height);
+  chuteCanvas.style.display = 'block';
+  g.canvas.chute[currIndex].style.display = 'none';
+  g.chute.index = nextIndex;
   word.y += word.speed;
   if (word.y >= g.finishY) {
     g.nextWord();
@@ -135,23 +141,26 @@ TypingPteranodon.load = function () {
       container = g.make('div', { id: 'gameContainer', in: wrapper }),
       canvas = g.canvas = {
         stage: g.make('canvas', { in: wrapper }),
-        chute: g.make('canvas', { id: 'chute', in: container }),
+        chute: [ g.make('canvas', { id: 'chute', in: container }),
+                  g.make('canvas', { id: 'chute', in: container }) ],
         typing: g.make('canvas', { id: 'typingDisplay', in: wrapper })
       },
       context = g.context = {
         stage: canvas.stage.getContext('2d'),
-        chute: canvas.chute.getContext('2d'),
+        chute: [ canvas.chute[0].getContext('2d'),
+                 canvas.chute[1].getContext('2d') ],
         typing: canvas.typing.getContext('2d')
       },
       input = g.input = g.make('input', { id: 'typingInput', in: wrapper }),
       layout = g.layout;
-  canvas.chute.width = g.layout.chute.width;
-  canvas.chute.height = g.layout.chute.height;
+  canvas.chute[1].width = canvas.chute[0].width = g.layout.chute.width;
+  canvas.chute[1].height = canvas.chute[0].height = g.layout.chute.height;
   canvas.stage.width = canvas.typing.width = g.layout.chute.width;
   canvas.stage.height = canvas.typing.height = 2 * g.font.size.pixels;
   input.style.left = container.style.left = canvas.typing.style.left =
       layout.chute.left + 'px';
-  canvas.chute.style.top = layout.chute.top + 'px';
+  canvas.chute[1].style.top = canvas.chute[0].style.top =
+      layout.chute.top + 'px';
   input.style.top = canvas.typing.style.top =
       layout.chute.top + layout.chute.height + 'px';
   canvas.stage.style.position = 'fixed';
@@ -160,7 +169,8 @@ TypingPteranodon.load = function () {
   canvas.stage.style.border = '1px dotted #ddd';
 
   var font = g.font.size.pixels + 'px ' + g.font.face;
-  context.stage.font = context.chute.font = context.typing.font = font;
+  context.stage.font = context.chute[1].font = context.chute[0].font =
+      context.typing.font = font;
   g.font.base = {
     left: Math.floor(g.font.size.pixels/2),
     top: g.font.size.pixels +
@@ -178,8 +188,11 @@ TypingPteranodon.load = function () {
       console.log('refocused');
     }, 20);
   }
-  canvas.typing.onmousedown = canvas.chute.onmousedown = refocus;
+  canvas.typing.onmousedown =
+      canvas.chute[1].onmousedown = canvas.chute[0].refocus;
   refocus();
+  g.chute = { index: 0 };
+  g.canvas.chute[1].style.display = 'none';
 
   g.startY = 0;
   g.finishY = layout.chute.height;
