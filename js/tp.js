@@ -1,6 +1,7 @@
 var TypingPteranodon = {
   layout: {
-    chute: { width: 400, height: 500, left: 50, top: 50 },
+    container: { left: 50, top: 50 },
+    chute: { width: 400, height: 500 },
     typing: { width: 300, height: 50 }
   },
   font: {
@@ -62,14 +63,14 @@ TypingPteranodon.nextWord = function () {
   word.height = word.lastRow - word.firstRow + 1;
 
   word.baseX = Math.floor((g.layout.chute.width - word.width) / 2);
-  word.y = -word.height;
+  word.y = 0;
 };
 
 TypingPteranodon.play = function () {
   var g = TypingPteranodon,
       level = g.level = g.makeLevel(),
       word = g.word = {};
-  word.speed = 1.4;
+  word.speed = 0.8;
   g.wordIndex = -1;
   g.nextWord();
   g.ticks = 0;
@@ -94,11 +95,19 @@ TypingPteranodon.update.chute = function () {
       context = g.context,
       chuteContext = context.chute[nextIndex];
   g.ticks += 1;
-  word.x = word.baseX - 5*Math.sin(word.y/10);
+  var sway = 3*Math.sin(word.y/10);
+  word.x = word.baseX - sway;
+  var centerX = word.x + word.width/2,
+      centerY = word.y - word.height/2,
+      angle = sway / 75;
   chuteContext.clearRect(0, 0, chuteCanvas.width, chuteCanvas.height);
+  chuteContext.translate(centerX, centerY);
+  chuteContext.rotate(angle);
+  chuteContext.translate(-centerX, -centerY);
   chuteContext.drawImage(g.canvas.stage,
       0, word.firstRow, word.width, word.height,
       word.x, word.y, word.width, word.height);
+  chuteContext.setTransform(1, 0, 0, 1, 0, 0);
   word.y += word.speed;
   if (word.y >= g.finishY) {
     g.nextWord();
@@ -158,21 +167,21 @@ TypingPteranodon.load = function () {
       },
       input = g.input = g.make('input', { id: 'typingInput', in: wrapper }),
       layout = g.layout;
-  container.style.width = g.layout.chute.width + 'px';
-  container.style.height = g.layout.chute.height + 'px';
   canvas.chute[1].width = canvas.chute[0].width = g.layout.chute.width;
   canvas.chute[1].height = canvas.chute[0].height = g.layout.chute.height;
   canvas.stage.width = canvas.typing.width = g.layout.chute.width;
   canvas.stage.height = canvas.typing.height = 2 * g.font.size.pixels;
+  container.style.width = g.layout.chute.width + 'px';
+  container.style.height = g.layout.chute.height + 'px';
+  container.style.left = g.layout.container.left + 'px';
   input.style.left = container.style.left = canvas.typing.style.left =
-      layout.chute.left + 'px';
-  canvas.chute[1].style.top = canvas.chute[0].style.top =
-      layout.chute.top + 'px';
+      layout.container.left + 'px';
   input.style.top = canvas.typing.style.top =
-      layout.chute.top + layout.chute.height + 'px';
+      layout.container.top + layout.chute.height + 'px';
   canvas.stage.style.position = 'fixed';
   canvas.stage.style.top = layout.chute.top + 'px';
-  canvas.stage.style.left = layout.chute.left + layout.chute.width + 5 + 'px';
+  canvas.stage.style.left = layout.container.left + layout.chute.width +
+      5 + 'px';
   canvas.stage.style.border = '1px dotted #ddd';
 
   var font = g.font.size.pixels + 'px ' + g.font.face;
