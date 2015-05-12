@@ -7,7 +7,6 @@ var TypingPteranodon = {
     face: 'sans-serif',
     size: { pixels: 30 },
   },
-  hertz: 60,
   dictionary: dictionary17870,
   update: {}
 };
@@ -17,7 +16,7 @@ TypingPteranodon.makeLevel = function () {
       dictionary = g.dictionary,
       level = {},
       words = level.words = [],
-      numWords = level.numWords = 10;
+      numWords = level.numWords = 25;
   for (var i = 0; i < numWords; ++i) {
     var index = Math.floor(Math.random() * dictionary.length);
     words.push(dictionary[index]);
@@ -62,7 +61,7 @@ TypingPteranodon.nextWord = function () {
   }
   word.height = word.lastRow - word.firstRow + 1;
 
-  word.x = Math.floor((g.layout.chute.width - word.width) / 2);
+  word.baseX = Math.floor((g.layout.chute.width - word.width) / 2);
   word.y = -word.height;
 };
 
@@ -70,8 +69,7 @@ TypingPteranodon.play = function () {
   var g = TypingPteranodon,
       level = g.level = g.makeLevel(),
       word = g.word = {};
-  word.speed = 2;
-  console.log(word.speed);
+  word.speed = 1.4;
   g.wordIndex = -1;
   g.nextWord();
   g.ticks = 0;
@@ -91,19 +89,23 @@ TypingPteranodon.update.chute = function () {
   }
   var word = g.word,
       currIndex = g.chute.index,
-      chuteCanvas = g.canvas.chute[currIndex],
+      nextIndex = (currIndex == 0 ? 1 : 0),
+      chuteCanvas = g.canvas.chute[nextIndex],
       context = g.context,
-      chuteContext = context.chute[currIndex];
+      chuteContext = context.chute[nextIndex];
   g.ticks += 1;
-  chuteContext.clearRect(word.x, word.oldY, word.width, word.height);
+  word.x = word.baseX - 5*Math.sin(word.y/10);
+  chuteContext.clearRect(0, 0, chuteCanvas.width, chuteCanvas.height);
   chuteContext.drawImage(g.canvas.stage,
       0, word.firstRow, word.width, word.height,
       word.x, word.y, word.width, word.height);
-  word.oldY = word.y;
   word.y += word.speed;
   if (word.y >= g.finishY) {
     g.nextWord();
   }
+  chuteCanvas.visibility = 'visible';
+  g.canvas.chute[currIndex].visibility = 'hidden';
+  g.chute.index = nextIndex;
   window.requestAnimationFrame(g.update.chute);
 };
 

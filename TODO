@@ -4,11 +4,17 @@
 + try double-buffering to improve chute performance
 + animate with requestAnimationFrame
 
+- eccentric word movement
+  + side to side
+  - rotation
+- calculate animations with absolute time
+
 - render word prefixes in a different color
 - improve game layout
 - improve refocusing
 - test with IE
 
+- precalculate trig functions
 - use a shim for requestAnimationFrame
   http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
 - consider other performance tips
