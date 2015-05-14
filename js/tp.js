@@ -1,6 +1,6 @@
 var TypingPteranodon = {
   layout: {
-    container: { left: 50, top: 50 },
+    container: { left: 50, top: 40 },
     chute: { width: 400, height: 500 },
     typing: { width: 300, height: 50 }
   },
@@ -168,13 +168,12 @@ TypingPteranodon.update.chute = function () {
 };
 
 TypingPteranodon.update.typing = function () {
-  var g = TypingPteranodon,
-      target = g.word.text,
-      attempt = g.input.value,
-      typingCanvas = g.canvas.typing,
-      typingContext = g.context.typing;
-  typingContext.clearRect(0, 0, typingCanvas.width, typingCanvas.height),
-  typingContext.fillText(attempt, g.font.base.left, g.font.base.top);
+  var g = TypingPteranodon;
+  if (!g.playing) {
+    return;
+  }
+  var target = g.word.text,
+      attempt = g.input.value;
   if (attempt.length > target.length) {
     console.log('program error: input overflow');
     g.stop();
@@ -190,7 +189,6 @@ TypingPteranodon.update.typing = function () {
   g.prefixLength += 1;
   if (g.prefixLength == target.length) {
     g.input.value = '';
-    typingContext.clearRect(0, 0, typingCanvas.width, typingCanvas.height);
     g.nextWord();
   }
 };
@@ -218,28 +216,26 @@ TypingPteranodon.load = function () {
       canvas = g.canvas = {
         stage: g.make('canvas', { into: wrapper }),
         chute: [ g.make('canvas', { id: 'chute', into: container }),
-                  g.make('canvas', { id: 'chute', into: container }) ],
-        typing: g.make('canvas', { id: 'typingDisplay', into: wrapper })
+                  g.make('canvas', { id: 'chute', into: container }) ]
       },
       context = g.context = {
         stage: canvas.stage.getContext('2d'),
         chute: [ canvas.chute[0].getContext('2d'),
-                 canvas.chute[1].getContext('2d') ],
-        typing: canvas.typing.getContext('2d')
+                 canvas.chute[1].getContext('2d') ]
       },
       input = g.input = g.make('input', { id: 'typingInput', into: wrapper }),
       layout = g.layout;
+  canvas.stage.width = g.layout.chute.width;
+  canvas.stage.height = Math.ceil(3.5*g.font.size.pixels);
+  canvas.stage.style.display = 'none';
   canvas.chute[1].width = canvas.chute[0].width = g.layout.chute.width;
   canvas.chute[1].height = canvas.chute[0].height = g.layout.chute.height;
-  canvas.stage.width = canvas.typing.width = g.layout.chute.width;
-  canvas.stage.height = canvas.typing.height = 2 * g.font.size.pixels;
   container.style.width = g.layout.chute.width + 'px';
   container.style.height = g.layout.chute.height + 'px';
   container.style.left = g.layout.container.left + 'px';
-  input.style.left = container.style.left = canvas.typing.style.left =
-      layout.container.left + 'px';
-  input.style.top = canvas.typing.style.top =
-      layout.container.top + layout.chute.height + 'px';
+  container.style.top = g.layout.container.top + 'px';
+  input.style.left = container.style.left = layout.container.left + 'px';
+  input.style.top = layout.container.top + 'px';
   canvas.stage.style.position = 'fixed';
   canvas.stage.style.top = layout.chute.top + 'px';
   canvas.stage.style.left = layout.container.left + layout.chute.width +
@@ -248,25 +244,23 @@ TypingPteranodon.load = function () {
 
   g.font.string = g.font.size.pixels + 'px ' + g.font.face;
   context.stage.font = context.chute[1].font = context.chute[0].font =
-      context.typing.font = g.font.string;
+      g.font.string;
   g.font.base = {
     left: Math.floor(g.font.size.pixels/2),
-    top: g.font.size.pixels +
-      Math.floor((g.layout.typing.height - g.font.size.pixels)/2)
+    top: 2*g.font.size.pixels
   };
 
   input.oninput = g.update.typing;
   input.onblur = function () {
-    canvas.typing.className = '';
+    container.className = 'inactive';
   };
   function refocus() {
     window.setTimeout(function () {
-      canvas.typing.className = 'focused';
+      container.className = '';
       input.focus();
     }, 20);
   }
-  canvas.chute[1].onmousedown = canvas.chute[0].onmousedown =
-      canvas.typing.onmousedown = refocus;
+  canvas.chute[1].onmousedown = canvas.chute[0].onmousedown = refocus;
   refocus();
   g.chute = { index: 0 };
   g.canvas.chute[1].style.display = 'none';

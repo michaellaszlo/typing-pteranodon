@@ -6,13 +6,13 @@
 + eccentric word movement
   + side to side
   + rotation
++ typing action
+  + render word prefixes in a different color
+  + show prefixes while typing
+  + hide input
 
 - calculate animations with absolute time
 
-- typing action
-  + render word prefixes in a different color
-  + show prefixes while typing
-  - hide input
 - improve game layout
 - improve refocusing
 - test with IE
