@@ -7,6 +7,7 @@ var TypingPteranodon = {
   font: {
     face: 'sans-serif',
     size: { pixels: 30 },
+    color: { target: '#222', correct: '#92a4b6' }
   },
   dictionary: dictionary17870,
   update: {}
@@ -38,9 +39,11 @@ TypingPteranodon.nextWord = function () {
   word.text = level.words[wordIndex]; 
   word.width = Math.ceil(context.chute[0].measureText(word.text).width);
 
-  // Measure the height of the word.
+  // Render the word.
+  context.stage.fillStyle = g.font.color.target;
   context.stage.clearRect(0, 0, canvas.stage.width, canvas.stage.height);
   context.stage.fillText(word.text, 0, g.font.base.top);
+  // Measure the height of the word.
   var testWidth = word.width,
       testHeight = canvas.stage.height,
       testData = context.stage.getImageData(0, 0, testWidth, testHeight).data;
@@ -62,8 +65,56 @@ TypingPteranodon.nextWord = function () {
   }
   word.height = word.lastRow - word.firstRow + 1;
 
+  var target = g.make('canvas'),
+      targetContext = target.getContext('2d'),
+      width = word.width,
+      height = word.height;
+  target.width = width;
+  target.height = height;
+  targetContext.drawImage(canvas.stage,
+      0, word.firstRow, width, height,
+      0, 0, width, height);
+  word.canvas = [target];
+  context.stage.fillStyle = g.font.color.correct;
+  for (var length = 1; length <= word.text.length; ++length) {
+    var prefix = g.make('canvas'),
+        prefixContext = prefix.getContext('2d');
+    prefix.width = width;
+    prefix.height = height;
+    context.stage.clearRect(0, word.firstRow, width, height);
+    context.stage.fillText(word.text.substring(0, length), 0, g.font.base.top);
+    prefixContext.drawImage(canvas.stage,
+        0, word.firstRow, width, height,
+        0, 0, width, height);
+    var result = g.overpaint(targetContext, prefixContext, width, height);
+    word.canvas.push(result);
+  }
+  g.prefixLength = 0;
+
   word.baseX = Math.floor((g.layout.chute.width - word.width) / 2);
   word.y = 0;
+};
+
+TypingPteranodon.overpaint = function (baseContext, overContext,
+      width, height) {
+  var g = TypingPteranodon,
+      baseImage = baseContext.getImageData(0, 0, width, height),
+      baseData = baseImage.data,
+      overImage = overContext.getImageData(0, 0, width, height),
+      overData = overImage.data;
+  for (var i = 4*width*height - 1; i != -1; i -= 4) {
+    if (overData[i] != 0) {
+      baseData[i-3] = overData[i-3];
+      baseData[i-2] = overData[i-2];
+      baseData[i-1] = overData[i-1];
+      baseData[i] = overData[i];
+    }
+  }
+  var result = g.make('canvas');
+  result.width = width;
+  result.height = height;
+  result.getContext('2d').putImageData(baseImage, 0, 0);
+  return result;
 };
 
 TypingPteranodon.play = function () {
@@ -104,9 +155,7 @@ TypingPteranodon.update.chute = function () {
   chuteContext.translate(centerX, centerY);
   chuteContext.rotate(angle);
   chuteContext.translate(-centerX, -centerY);
-  chuteContext.drawImage(g.canvas.stage,
-      0, word.firstRow, word.width, word.height,
-      word.x, word.y, word.width, word.height);
+  chuteContext.drawImage(word.canvas[g.prefixLength], word.x, word.y);
   chuteContext.setTransform(1, 0, 0, 1, 0, 0);
   word.y += word.speed;
   if (word.y >= g.finishY) {
@@ -120,16 +169,29 @@ TypingPteranodon.update.chute = function () {
 
 TypingPteranodon.update.typing = function () {
   var g = TypingPteranodon,
-      word = g.word,
+      target = g.word.text,
       attempt = g.input.value,
       typingCanvas = g.canvas.typing,
       typingContext = g.context.typing;
   typingContext.clearRect(0, 0, typingCanvas.width, typingCanvas.height),
   typingContext.fillText(attempt, g.font.base.left, g.font.base.top);
-  return;
-  for (var i = 0; i < word.text.length && i < attempt.length; ++i) {
-    var c = word.text.charAt(i),
-        d = attempt.charAt(i);
+  if (attempt.length > target.length) {
+    console.log('program error: input overflow');
+    g.stop();
+    return;
+  }
+  for (var i = 0; i < attempt.length; ++i) {
+    if (attempt.charAt(i) != target.charAt(i)) {
+      console.log('wrong character: \''+attempt.charAt(i)+'\'');
+      g.stop();
+      return;
+    }
+  }
+  g.prefixLength += 1;
+  if (g.prefixLength == target.length) {
+    g.input.value = '';
+    typingContext.clearRect(0, 0, typingCanvas.width, typingCanvas.height);
+    g.nextWord();
   }
 };
 
@@ -139,11 +201,11 @@ TypingPteranodon.make = function (tag, options) {
     if (options.id !== undefined) {
       element.id = options.id;
     }
-    if (options.class !== undefined) {
-      element.className = options.class;
+    if (options.className !== undefined) {
+      element.className = options.className;
     }
-    if (options.in !== undefined) {
-      options.in.appendChild(element);
+    if (options.into !== undefined) {
+      options.into.appendChild(element);
     }
   }
   return element;
@@ -152,12 +214,12 @@ TypingPteranodon.make = function (tag, options) {
 TypingPteranodon.load = function () {
   var g = TypingPteranodon,
       wrapper = document.getElementById('wrapper'),
-      container = g.make('div', { id: 'gameContainer', in: wrapper }),
+      container = g.make('div', { id: 'gameContainer', into: wrapper }),
       canvas = g.canvas = {
-        stage: g.make('canvas', { in: wrapper }),
-        chute: [ g.make('canvas', { id: 'chute', in: container }),
-                  g.make('canvas', { id: 'chute', in: container }) ],
-        typing: g.make('canvas', { id: 'typingDisplay', in: wrapper })
+        stage: g.make('canvas', { into: wrapper }),
+        chute: [ g.make('canvas', { id: 'chute', into: container }),
+                  g.make('canvas', { id: 'chute', into: container }) ],
+        typing: g.make('canvas', { id: 'typingDisplay', into: wrapper })
       },
       context = g.context = {
         stage: canvas.stage.getContext('2d'),
@@ -165,7 +227,7 @@ TypingPteranodon.load = function () {
                  canvas.chute[1].getContext('2d') ],
         typing: canvas.typing.getContext('2d')
       },
-      input = g.input = g.make('input', { id: 'typingInput', in: wrapper }),
+      input = g.input = g.make('input', { id: 'typingInput', into: wrapper }),
       layout = g.layout;
   canvas.chute[1].width = canvas.chute[0].width = g.layout.chute.width;
   canvas.chute[1].height = canvas.chute[0].height = g.layout.chute.height;
@@ -184,9 +246,9 @@ TypingPteranodon.load = function () {
       5 + 'px';
   canvas.stage.style.border = '1px dotted #ddd';
 
-  var font = g.font.size.pixels + 'px ' + g.font.face;
+  g.font.string = g.font.size.pixels + 'px ' + g.font.face;
   context.stage.font = context.chute[1].font = context.chute[0].font =
-      context.typing.font = font;
+      context.typing.font = g.font.string;
   g.font.base = {
     left: Math.floor(g.font.size.pixels/2),
     top: g.font.size.pixels +

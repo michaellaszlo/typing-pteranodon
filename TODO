@@ -3,13 +3,16 @@
 + debug input-focusing in Firefox and Safari
 + try double-buffering to improve chute performance
 + animate with requestAnimationFrame
-
-- eccentric word movement
++ eccentric word movement
   + side to side
-  - rotation
+  + rotation
+
 - calculate animations with absolute time
 
-- render word prefixes in a different color
+- typing action
+  + render word prefixes in a different color
+  + show prefixes while typing
+  - hide input
 - improve game layout
 - improve refocusing
 - test with IE
