@@ -10,7 +10,10 @@
   + render word prefixes in a different color
   + show prefixes while typing
   + hide input
++ pause on blur 
 
+- restart button
+- some kind of score
 - calculate animations with absolute time
 
 - improve game layout
@@ -23,4 +26,48 @@
 - consider other performance tips
   http://www.html5rocks.com/en/tutorials/canvas/performance/
 
+guiding principles:
+- accurate typing
+  - one strike and you're out
+  - dissuade use of the backspace
+  - allowing yourself to use the backspace causes much time to be lost
+    - time to recognize the error
+    - time to backspace
+    - time to retype
+    - it would be faster to type it correctly the first time
+  - stop rushing ahead and making errors
+  - slow down when you're unsure
+  - pause to contemplate the next key
+  - after a while, finding the right key will become second nature
+- gamification
+  - fun to play
+  - interesting visual effects
+  - varied mechanics
+  - incentives to do better
+  - level up: more challenges, different visuals, higher score
+- help the user associate characters with finger movements
+  - character per key
+  - characters per row
+  - characters per column
+  - word
+  - sentence
+- diagnose weaknesses
+  - detailed statistics
+  - per finger
+  - per character
+  - per bigram
+  - option to train on weaknesses instead of general text
+- maintain a historical record
+  - administer general typing test
+    - focusing on weaknesses
+    - focusing on general text
+  - detailed statistics and general typing speed
+- localization
+  - choice of general text
+    - public-domain fiction
+    - programming language
+    - quotes from current fiction?
+    - non-fiction?
+    - foreign languages?
+  - alternative keyboard layouts?
 

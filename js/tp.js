@@ -1,7 +1,6 @@
 var TypingPteranodon = {
   layout: {
-    container: { left: 50, top: 40 },
-    chute: { width: 400, height: 500 },
+    chute: { width: 400, height: 500, left: 50, top: 40 },
     typing: { width: 300, height: 50 }
   },
   font: {
@@ -34,7 +33,8 @@ TypingPteranodon.nextWord = function () {
       word = g.word,
       wordIndex = ++g.wordIndex;
   if (wordIndex == level.numWords) {
-    g.stop();
+    g.finishGame();
+    //g.nextLevel();
   }
   word.text = level.words[wordIndex]; 
   word.width = Math.ceil(context.chute[0].measureText(word.text).width);
@@ -117,7 +117,7 @@ TypingPteranodon.overpaint = function (baseContext, overContext,
   return result;
 };
 
-TypingPteranodon.play = function () {
+TypingPteranodon.startGame = function () {
   var g = TypingPteranodon,
       level = g.level = g.makeLevel(),
       word = g.word = {};
@@ -125,18 +125,33 @@ TypingPteranodon.play = function () {
   g.wordIndex = -1;
   g.nextWord();
   g.ticks = 0;
+  g.resume();
   g.playing = true;
-  window.requestAnimationFrame(g.update.chute);
 }
 
-TypingPteranodon.stop = function () {
+TypingPteranodon.resume = function () {
+  var g = TypingPteranodon;
+  g.chute.className = '';
+  g.input.focus();
+  g.paused = false;
+  window.requestAnimationFrame(g.update.chute);
+};
+
+TypingPteranodon.pause = function () {
+  var g = TypingPteranodon;
+  g.paused = true;
+  g.chute.className = 'paused';
+};
+
+TypingPteranodon.finishGame = function () {
   var g = TypingPteranodon;
   g.playing = false;
+  g.chute.className = 'finished';
 };
 
 TypingPteranodon.update.chute = function () {
   var g = TypingPteranodon;
-  if (!g.playing) {
+  if (!g.playing || g.paused) {
     return;
   }
   var word = g.word,
@@ -169,20 +184,20 @@ TypingPteranodon.update.chute = function () {
 
 TypingPteranodon.update.typing = function () {
   var g = TypingPteranodon;
-  if (!g.playing) {
+  if (!g.playing || g.paused) {
     return;
   }
   var target = g.word.text,
       attempt = g.input.value;
   if (attempt.length > target.length) {
     console.log('program error: input overflow');
-    g.stop();
+    g.pause();
     return;
   }
   for (var i = 0; i < attempt.length; ++i) {
     if (attempt.charAt(i) != target.charAt(i)) {
       console.log('wrong character: \''+attempt.charAt(i)+'\'');
-      g.stop();
+      g.finishGame();
       return;
     }
   }
@@ -212,11 +227,11 @@ TypingPteranodon.make = function (tag, options) {
 TypingPteranodon.load = function () {
   var g = TypingPteranodon,
       wrapper = document.getElementById('wrapper'),
-      container = g.make('div', { id: 'gameContainer', into: wrapper }),
+      chute = g.chute = g.make('div', { id: 'gameContainer', into: wrapper }),
       canvas = g.canvas = {
         stage: g.make('canvas', { into: wrapper }),
-        chute: [ g.make('canvas', { id: 'chute', into: container }),
-                  g.make('canvas', { id: 'chute', into: container }) ]
+        chute: [ g.make('canvas', { id: 'chute', into: chute }),
+                  g.make('canvas', { id: 'chute', into: chute }) ]
       },
       context = g.context = {
         stage: canvas.stage.getContext('2d'),
@@ -230,15 +245,15 @@ TypingPteranodon.load = function () {
   canvas.stage.style.display = 'none';
   canvas.chute[1].width = canvas.chute[0].width = g.layout.chute.width;
   canvas.chute[1].height = canvas.chute[0].height = g.layout.chute.height;
-  container.style.width = g.layout.chute.width + 'px';
-  container.style.height = g.layout.chute.height + 'px';
-  container.style.left = g.layout.container.left + 'px';
-  container.style.top = g.layout.container.top + 'px';
-  input.style.left = container.style.left = layout.container.left + 'px';
-  input.style.top = layout.container.top + 'px';
+  chute.style.width = g.layout.chute.width + 'px';
+  chute.style.height = g.layout.chute.height + 'px';
+  chute.style.left = g.layout.chute.left + 'px';
+  chute.style.top = g.layout.chute.top + 'px';
+  input.style.left = chute.style.left = layout.chute.left + 'px';
+  input.style.top = layout.chute.top + 'px';
   canvas.stage.style.position = 'fixed';
   canvas.stage.style.top = layout.chute.top + 'px';
-  canvas.stage.style.left = layout.container.left + layout.chute.width +
+  canvas.stage.style.left = layout.chute.left + layout.chute.width +
       5 + 'px';
   canvas.stage.style.border = '1px dotted #ddd';
 
@@ -251,22 +266,27 @@ TypingPteranodon.load = function () {
   };
 
   input.oninput = g.update.typing;
-  input.onblur = function () {
-    container.className = 'inactive';
+  function unfocus() {
+    if (!g.playing || g.paused) {
+      return;
+    }
+    g.pause();
   };
   function refocus() {
+    if (!g.playing || !g.paused) {
+      return;
+    }
     window.setTimeout(function () {
-      container.className = '';
-      input.focus();
-    }, 20);
+      g.resume();
+    }, 0);
   }
+  input.onblur = unfocus;
   canvas.chute[1].onmousedown = canvas.chute[0].onmousedown = refocus;
-  refocus();
-  g.chute = { index: 0 };
+  g.chute.index = 0;
   g.canvas.chute[1].style.display = 'none';
 
   g.finishY = layout.chute.height;
-  g.play();
+  g.startGame();
 };
 
 window.onload = TypingPteranodon.load;

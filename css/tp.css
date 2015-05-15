@@ -35,10 +35,14 @@ h1 {
   position: fixed;
   background: #fff;
 }
-#gameContainer.inactive {
+#gameContainer.paused {
   border: 2px solid #fff;
   background: #ddd;
   opacity: 0.3;
+}
+#gameContainer.finished {
+  border: 2px solid #cd7d7d;
+  background: #ffe;
 }
 #gameContainer canvas {
   position: absolute;
