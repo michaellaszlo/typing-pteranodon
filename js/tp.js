@@ -17,7 +17,7 @@ TypingPteranodon.makeLevel = function () {
       dictionary = g.dictionary,
       level = {},
       words = level.words = [],
-      numWords = level.numWords = 3;
+      numWords = level.numWords = 1;
   for (var i = 0; i < numWords; ++i) {
     var index = Math.floor(Math.random() * dictionary.length);
     words.push(dictionary[index]);
@@ -33,6 +33,8 @@ TypingPteranodon.nextWord = function () {
       word = g.word,
       wordIndex = ++g.wordIndex;
   if (wordIndex == level.numWords) {
+    console.log('level completed');
+    g.update.chute();
     g.finishGame();
     //g.nextLevel();
     return;
@@ -126,8 +128,8 @@ TypingPteranodon.startGame = function () {
   g.wordIndex = -1;
   g.nextWord();
   g.ticks = 0;
-  g.resume();
   g.playing = true;
+  g.resume();
 }
 
 TypingPteranodon.resume = function () {
@@ -135,7 +137,7 @@ TypingPteranodon.resume = function () {
   g.chute.className = '';
   g.input.focus();
   g.paused = false;
-  window.requestAnimationFrame(g.update.chute);
+  g.cycle();
 };
 
 TypingPteranodon.pause = function () {
@@ -150,10 +152,23 @@ TypingPteranodon.finishGame = function () {
   g.chute.className = 'finished';
 };
 
-TypingPteranodon.update.chute = function () {
+TypingPteranodon.cycle = function (time) {
   var g = TypingPteranodon;
   if (!g.playing || g.paused) {
     return;
+  }
+  if (time !== undefined) {
+    g.update.chute(time);
+  }
+  window.requestAnimationFrame(g.cycle);
+};
+
+TypingPteranodon.update.chute = function (time) {
+  var g = TypingPteranodon;
+  if (time === undefined) {
+    time = g.update.time;
+  } else {
+    g.update.time = time;
   }
   var word = g.word,
       currIndex = g.chute.index,
@@ -178,10 +193,9 @@ TypingPteranodon.update.chute = function () {
     console.log('incomplete: "'+g.input.value+'", target: "'+word.text+'"');
     g.finishGame();
   }
-  chuteCanvas.visibility = 'visible';
-  g.canvas.chute[currIndex].visibility = 'hidden';
+  chuteCanvas.style.visibility = 'visible';
+  g.canvas.chute[currIndex].style.visibility = 'hidden';
   g.chute.index = nextIndex;
-  window.requestAnimationFrame(g.update.chute);
 };
 
 TypingPteranodon.update.typing = function () {
@@ -285,7 +299,7 @@ TypingPteranodon.load = function () {
   input.onblur = unfocus;
   canvas.chute[1].onmousedown = canvas.chute[0].onmousedown = refocus;
   g.chute.index = 0;
-  g.canvas.chute[1].style.display = 'none';
+  g.canvas.chute[1].style.visibility = 'hidden';
 
   g.finishY = layout.chute.height;
   g.startGame();
