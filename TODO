@@ -12,12 +12,14 @@
   + hide input
 + pause on blur 
 
-- bug: clicking on chute pauses the game; this should only be a resume action
-
 - restart button
 - on typo, show incorrect letter
 - on completion, do a visual effect
-- some kind of score
+- scoring
+  - level number
+  - progress within level
+  - best scores
+  - most recent scores
 - calculate animations with absolute time
 
 - improve game layout

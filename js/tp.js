@@ -12,12 +12,21 @@ var TypingPteranodon = {
   update: {}
 };
 
+var debug = {
+  status: { game: true, event: false },
+  message: function (flag, s) {
+    if (debug.status[flag]) {
+      console.log(s);
+    }
+  }
+};
+
 TypingPteranodon.makeLevel = function () {
   var g = TypingPteranodon,
       dictionary = g.dictionary,
       level = {},
       words = level.words = [],
-      numWords = level.numWords = 1;
+      numWords = level.numWords = 3;
   for (var i = 0; i < numWords; ++i) {
     var index = Math.floor(Math.random() * dictionary.length);
     words.push(dictionary[index]);
@@ -33,8 +42,9 @@ TypingPteranodon.nextWord = function () {
       word = g.word,
       wordIndex = ++g.wordIndex;
   if (wordIndex == level.numWords) {
-    console.log('level completed');
+    debug.message('game', 'level completed');
     g.update.chute();
+    g.chute.className = 'cleared';
     g.finishGame();
     //g.nextLevel();
     return;
@@ -124,7 +134,7 @@ TypingPteranodon.startGame = function () {
   var g = TypingPteranodon,
       level = g.level = g.makeLevel(),
       word = g.word = {};
-  word.speed = 0.8;
+  word.speed = 0.3;
   g.wordIndex = -1;
   g.nextWord();
   g.ticks = 0;
@@ -134,27 +144,30 @@ TypingPteranodon.startGame = function () {
 
 TypingPteranodon.resume = function () {
   var g = TypingPteranodon;
+  debug.message('event', 'resuming');
+  g.chuteClicked = false;
   g.chute.className = '';
   g.input.focus();
-  g.paused = false;
+  g.active = true;
   g.cycle();
 };
 
 TypingPteranodon.pause = function () {
   var g = TypingPteranodon;
-  g.paused = true;
+  debug.message('event', 'pausing');
+  g.active = false;
   g.chute.className = 'paused';
 };
 
 TypingPteranodon.finishGame = function () {
   var g = TypingPteranodon;
+  g.active = false;
   g.playing = false;
-  g.chute.className = 'finished';
 };
 
 TypingPteranodon.cycle = function (time) {
   var g = TypingPteranodon;
-  if (!g.playing || g.paused) {
+  if (!g.active) {
     return;
   }
   if (time !== undefined) {
@@ -190,7 +203,9 @@ TypingPteranodon.update.chute = function (time) {
   chuteContext.setTransform(1, 0, 0, 1, 0, 0);
   word.y += word.speed;
   if (word.y >= g.finishY) {
-    console.log('incomplete: "'+g.input.value+'", target: "'+word.text+'"');
+    debug.message('game',
+        'incomplete: "'+g.input.value+'", target: "'+word.text+'"');
+    g.chute.className = 'failed';
     g.finishGame();
   }
   chuteCanvas.style.visibility = 'visible';
@@ -200,19 +215,20 @@ TypingPteranodon.update.chute = function (time) {
 
 TypingPteranodon.update.typing = function () {
   var g = TypingPteranodon;
-  if (!g.playing || g.paused) {
+  if (!g.active) {
     return;
   }
   var target = g.word.text,
       attempt = g.input.value;
   if (attempt.length > target.length) {
-    console.log('program error: input overflow');
+    debug.message('game', 'program error: input overflow');
     g.pause();
     return;
   }
   for (var i = 0; i < attempt.length; ++i) {
     if (attempt.charAt(i) != target.charAt(i)) {
-      console.log('typo: "'+attempt+'", target: "'+target+'"');
+      debug.message('game', 'typo: "'+attempt+'", target: "'+target+'"');
+      g.chute.className = 'failed';
       g.finishGame();
       return;
     }
@@ -246,8 +262,8 @@ TypingPteranodon.load = function () {
       chute = g.chute = g.make('div', { id: 'gameContainer', into: wrapper }),
       canvas = g.canvas = {
         stage: g.make('canvas', { into: wrapper }),
-        chute: [ g.make('canvas', { id: 'chute', into: chute }),
-                  g.make('canvas', { id: 'chute', into: chute }) ]
+        chute: [ g.make('canvas', { id: 'chute1', into: chute }),
+                  g.make('canvas', { id: 'chute2', into: chute }) ]
       },
       context = g.context = {
         stage: canvas.stage.getContext('2d'),
@@ -280,27 +296,46 @@ TypingPteranodon.load = function () {
     left: Math.floor(g.font.size.pixels/2),
     top: 2*g.font.size.pixels
   };
-
   input.oninput = g.update.typing;
-  function unfocus() {
-    if (!g.playing || g.paused) {
+
+  input.onblur = function () {
+    debug.message('event', 'blur');
+    if (!g.active) {
+      debug.message('event', 'not active');
+      return;
+    }
+    if (g.chuteClicked) {
+      debug.message('event', 'refocusing because the chute was clicked');
+      g.chuteClicked = false;
+      input.focus();
       return;
     }
     g.pause();
   };
-  function refocus() {
-    if (!g.playing || !g.paused) {
+
+  canvas.chute[1].onmousedown = canvas.chute[0].onmousedown = function () {
+    debug.message('event', 'chute click on '+this.id);
+    if (!g.playing) {
+      debug.message('not playing');
+      return;
+    }
+    if (g.chuteClicked) {
+      debug.message('event', 'a chute click is already being handled');
+      return;
+    }
+    g.chuteClicked = true;
+    if (g.active) {
+      debug.message('event', 'already active');
       return;
     }
     window.setTimeout(function () {
+      debug.message('event', 'queuing resume');
       g.resume();
     }, 0);
   }
-  input.onblur = unfocus;
-  canvas.chute[1].onmousedown = canvas.chute[0].onmousedown = refocus;
+
   g.chute.index = 0;
   g.canvas.chute[1].style.visibility = 'hidden';
-
   g.finishY = layout.chute.height;
   g.startGame();
 };

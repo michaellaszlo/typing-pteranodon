@@ -31,17 +31,17 @@ h1 {
 /*--- graphics ---*/
 
 #gameContainer {
-  border: 2px solid #bbb;
   position: fixed;
   background: #fff;
 }
 #gameContainer.paused {
-  border: 2px solid #fff;
   background: #ddd;
   opacity: 0.3;
 }
-#gameContainer.finished {
-  border: 2px solid #cd7d7d;
+#gameContainer.failed {
+  background: #fee;
+}
+#gameContainer.cleared {
   background: #ffe;
 }
 #gameContainer canvas {

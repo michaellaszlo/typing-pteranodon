@@ -1,0 +1,68 @@
+--------
+
+click twice rapidly on the chute:
+
+  chute click on chute2
+  already active
+  blur
+  refocusing because the chute was clicked
+  chute click on chute1
+  already active
+  blur
+  refocusing because the chute was clicked
+
+--------
+
+click outside the browser:
+
+  blur
+  pausing
+
+then click twice rapidly on the chute:
+
+  chute click on chute2
+  blur
+  not active
+  chute click on chute2
+  queuing resume
+  resuming
+  queuing resume
+  attempt to resume when already active
+
+--------
+
+click inside the browser but outside the chute:
+
+  blur
+  pausing
+
+then click twice rapidly on the chute:
+
+  chute click on chute2
+  queuing resume
+  resuming
+  chute click on chute1
+  already active
+  blur
+  refocusing because the chute was clicked
+
+--------
+
+click outside the browser:
+
+  blur
+  pausing
+
+then click once on the chute:
+
+  [nothing]
+
+after a pause, click again on the chute:
+
+  chute click on chute2
+  blur
+  not active
+  queuing resume
+  resuming
+
+--------
