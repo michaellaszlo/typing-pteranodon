@@ -12,18 +12,24 @@
   + hide input
 + pause on blur 
 
+- progression
+  + advance to next level
+  - show level number
+  - show progress within level
 - restart button
-- on typo, show incorrect letter
-- on completion, do a visual effect
-- scoring
-  - level number
-  - progress within level
-  - best scores
-  - most recent scores
-- calculate animations with absolute time
+- effects
+  - failure: typo
+  - failure: incomplete
+  - completion: word
+  - completion: level
+- history
+  - longest run
+  - recent runs
+- typing speed
+  - current
+  - average
 
-- improve game layout
-- improve refocusing
+- calculate animations with absolute time
 - test with IE
 
 - precalculate trig functions

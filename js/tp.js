@@ -8,30 +8,43 @@ var TypingPteranodon = {
     size: { pixels: 30 },
     color: { target: '#222', correct: '#92a4b6' }
   },
+  game: {
+    speed: { initial: 0.4, increment: 0.2 },
+    level: { numWords: 3 }
+  },
   dictionary: dictionary17870,
-  update: {}
-};
-
-var debug = {
-  status: { game: true, event: false },
-  message: function (flag, s) {
-    if (debug.status[flag]) {
-      console.log(s);
+  update: {},
+  debug: {
+    status: { game: true, event: false },
+    message: function (flag, s) {
+      if (TypingPteranodon.debug.status[flag]) {
+        console.log(s);
+      }
     }
   }
 };
 
-TypingPteranodon.makeLevel = function () {
+TypingPteranodon.makeLevel = function (levelIndex) {
   var g = TypingPteranodon,
       dictionary = g.dictionary,
       level = {},
       words = level.words = [],
-      numWords = level.numWords = 3;
+      numWords = level.numWords = g.game.level.numWords;
   for (var i = 0; i < numWords; ++i) {
-    var index = Math.floor(Math.random() * dictionary.length);
-    words.push(dictionary[index]);
+    var pos = Math.floor(Math.random() * dictionary.length);
+    words.push(dictionary[pos]);
   }
   return level;
+};
+
+TypingPteranodon.nextLevel = function () {
+  var g = TypingPteranodon;
+  ++g.levelIndex;
+  g.debug.message('game', 'levelIndex: '+g.levelIndex);
+  g.level = g.makeLevel(g.levelIndex);
+  g.word.speed += g.game.speed.increment;
+  g.wordIndex = -1;
+  g.nextWord();
 };
 
 TypingPteranodon.nextWord = function () {
@@ -42,11 +55,9 @@ TypingPteranodon.nextWord = function () {
       word = g.word,
       wordIndex = ++g.wordIndex;
   if (wordIndex == level.numWords) {
-    debug.message('game', 'level completed');
+    g.debug.message('game', 'level completed');
     g.update.chute();
-    g.chute.className = 'cleared';
-    g.finishGame();
-    //g.nextLevel();
+    g.nextLevel();
     return;
   }
   word.text = level.words[wordIndex]; 
@@ -131,20 +142,17 @@ TypingPteranodon.overpaint = function (baseContext, overContext,
 };
 
 TypingPteranodon.startGame = function () {
-  var g = TypingPteranodon,
-      level = g.level = g.makeLevel(),
-      word = g.word = {};
-  word.speed = 0.3;
-  g.wordIndex = -1;
-  g.nextWord();
-  g.ticks = 0;
+  var g = TypingPteranodon;
+  g.levelIndex = 0;
+  g.word = { speed: g.game.speed.initial - g.game.speed.increment };
   g.playing = true;
+  g.nextLevel();
   g.resume();
 }
 
 TypingPteranodon.resume = function () {
   var g = TypingPteranodon;
-  debug.message('event', 'resuming');
+  g.debug.message('game', 'resuming');
   g.chuteClicked = false;
   g.chute.className = '';
   g.input.focus();
@@ -154,7 +162,7 @@ TypingPteranodon.resume = function () {
 
 TypingPteranodon.pause = function () {
   var g = TypingPteranodon;
-  debug.message('event', 'pausing');
+  g.debug.message('game', 'pausing');
   g.active = false;
   g.chute.className = 'paused';
 };
@@ -189,7 +197,6 @@ TypingPteranodon.update.chute = function (time) {
       chuteCanvas = g.canvas.chute[nextIndex],
       context = g.context,
       chuteContext = context.chute[nextIndex];
-  g.ticks += 1;
   var sway = 3*Math.sin(word.y/10);
   word.x = word.baseX - sway;
   var centerX = word.x + word.width/2,
@@ -203,7 +210,7 @@ TypingPteranodon.update.chute = function (time) {
   chuteContext.setTransform(1, 0, 0, 1, 0, 0);
   word.y += word.speed;
   if (word.y >= g.finishY) {
-    debug.message('game',
+    g.debug.message('game',
         'incomplete: "'+g.input.value+'", target: "'+word.text+'"');
     g.chute.className = 'failed';
     g.finishGame();
@@ -221,13 +228,13 @@ TypingPteranodon.update.typing = function () {
   var target = g.word.text,
       attempt = g.input.value;
   if (attempt.length > target.length) {
-    debug.message('game', 'program error: input overflow');
+    g.debug.message('game', 'program error: input overflow');
     g.pause();
     return;
   }
   for (var i = 0; i < attempt.length; ++i) {
     if (attempt.charAt(i) != target.charAt(i)) {
-      debug.message('game', 'typo: "'+attempt+'", target: "'+target+'"');
+      g.debug.message('game', 'typo: "'+attempt+'", target: "'+target+'"');
       g.chute.className = 'failed';
       g.finishGame();
       return;
@@ -258,7 +265,7 @@ TypingPteranodon.make = function (tag, options) {
 
 TypingPteranodon.load = function () {
   var g = TypingPteranodon,
-      wrapper = document.getElementById('wrapper'),
+      wrapper = g.make('div', { id: 'wrapper', into: document.body }),
       chute = g.chute = g.make('div', { id: 'gameContainer', into: wrapper }),
       canvas = g.canvas = {
         stage: g.make('canvas', { into: wrapper }),
@@ -299,13 +306,13 @@ TypingPteranodon.load = function () {
   input.oninput = g.update.typing;
 
   input.onblur = function () {
-    debug.message('event', 'blur');
+    g.debug.message('event', 'blur');
     if (!g.active) {
-      debug.message('event', 'not active');
+      g.debug.message('event', 'not active');
       return;
     }
     if (g.chuteClicked) {
-      debug.message('event', 'refocusing because the chute was clicked');
+      g.debug.message('event', 'refocusing because the chute was clicked');
       g.chuteClicked = false;
       input.focus();
       return;
@@ -314,22 +321,22 @@ TypingPteranodon.load = function () {
   };
 
   canvas.chute[1].onmousedown = canvas.chute[0].onmousedown = function () {
-    debug.message('event', 'chute click on '+this.id);
+    g.debug.message('event', 'chute click on '+this.id);
     if (!g.playing) {
-      debug.message('not playing');
+      g.debug.message('not playing');
       return;
     }
     if (g.chuteClicked) {
-      debug.message('event', 'a chute click is already being handled');
+      g.debug.message('event', 'a chute click is already being handled');
       return;
     }
     g.chuteClicked = true;
     if (g.active) {
-      debug.message('event', 'already active');
+      g.debug.message('event', 'already active');
       return;
     }
     window.setTimeout(function () {
-      debug.message('event', 'queuing resume');
+      g.debug.message('event', 'queuing resume');
       g.resume();
     }, 0);
   }
