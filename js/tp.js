@@ -17,7 +17,7 @@ TypingPteranodon.makeLevel = function () {
       dictionary = g.dictionary,
       level = {},
       words = level.words = [],
-      numWords = level.numWords = 25;
+      numWords = level.numWords = 3;
   for (var i = 0; i < numWords; ++i) {
     var index = Math.floor(Math.random() * dictionary.length);
     words.push(dictionary[index]);
@@ -35,6 +35,7 @@ TypingPteranodon.nextWord = function () {
   if (wordIndex == level.numWords) {
     g.finishGame();
     //g.nextLevel();
+    return;
   }
   word.text = level.words[wordIndex]; 
   word.width = Math.ceil(context.chute[0].measureText(word.text).width);
@@ -174,7 +175,8 @@ TypingPteranodon.update.chute = function () {
   chuteContext.setTransform(1, 0, 0, 1, 0, 0);
   word.y += word.speed;
   if (word.y >= g.finishY) {
-    g.nextWord();
+    console.log('incomplete: "'+g.input.value+'", target: "'+word.text+'"');
+    g.finishGame();
   }
   chuteCanvas.visibility = 'visible';
   g.canvas.chute[currIndex].visibility = 'hidden';
@@ -196,7 +198,7 @@ TypingPteranodon.update.typing = function () {
   }
   for (var i = 0; i < attempt.length; ++i) {
     if (attempt.charAt(i) != target.charAt(i)) {
-      console.log('wrong character: \''+attempt.charAt(i)+'\'');
+      console.log('typo: "'+attempt+'", target: "'+target+'"');
       g.finishGame();
       return;
     }
