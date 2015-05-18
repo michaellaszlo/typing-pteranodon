@@ -1,5 +1,6 @@
 var TypingPteranodon = {
   layout: {
+    level: { font: { size: 24 }, padding: { left: 10, top: 2 } },
     chute: { width: 400, height: 500, left: 50, top: 40 },
     typing: { width: 300, height: 50 }
   },
@@ -42,6 +43,7 @@ TypingPteranodon.nextLevel = function () {
   ++g.levelIndex;
   g.debug.message('game', 'levelIndex: '+g.levelIndex);
   g.level = g.makeLevel(g.levelIndex);
+  g.display.level.innerHTML = 'Level '+g.levelIndex;
   g.word.speed += g.game.speed.increment;
   g.wordIndex = -1;
   g.nextWord();
@@ -266,6 +268,9 @@ TypingPteranodon.make = function (tag, options) {
 TypingPteranodon.load = function () {
   var g = TypingPteranodon,
       wrapper = g.make('div', { id: 'wrapper', into: document.body }),
+      display = g.display = {
+        level: g.make('div', { className: 'display', into: wrapper })
+      },
       chute = g.chute = g.make('div', { id: 'gameContainer', into: wrapper }),
       canvas = g.canvas = {
         stage: g.make('canvas', { into: wrapper }),
@@ -279,6 +284,16 @@ TypingPteranodon.load = function () {
       },
       input = g.input = g.make('input', { id: 'typingInput', into: wrapper }),
       layout = g.layout;
+  display.level.style.width = g.layout.chute.width -
+      g.layout.level.padding.left + 'px';
+  g.layout.level.height = 1.4 * g.layout.level.font.size;
+  display.level.style.height = g.layout.level.height -
+      g.layout.level.padding.top + 'px';
+  display.level.style.left = g.layout.chute.left + 'px';
+  display.level.style.top = g.layout.chute.top - g.layout.level.height + 'px';
+  display.level.style.paddingLeft = g.layout.level.padding.left + 'px';
+  display.level.style.paddingTop = g.layout.level.padding.top + 'px';
+  display.level.style.fontSize = g.layout.level.font.size + 'px';
   canvas.stage.width = g.layout.chute.width;
   canvas.stage.height = Math.ceil(3.5*g.font.size.pixels);
   canvas.stage.style.display = 'none';

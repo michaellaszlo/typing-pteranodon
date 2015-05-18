@@ -30,6 +30,13 @@ h1 {
 
 /*--- graphics ---*/
 
+.display {
+  position: fixed;
+  font-family: sans-serif;
+  background: #444;
+  color: #bbb;
+}
+
 #gameContainer {
   position: fixed;
   background: #fff;

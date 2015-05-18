@@ -14,7 +14,7 @@
 
 - progression
   + advance to next level
-  - show level number
+  + show level number
   - show progress within level
 - restart button
 - effects
@@ -30,7 +30,31 @@
   - average
 
 - calculate animations with absolute time
-- test with IE
+- sway
+  - keep it constant while chute speed increases
+    -> otherwise it becomes difficult and nauseating to read the word
+  - vary the sway parameters
+  - introduce various types of sway
+    + sine
+    - square
+    - squarish
+    - sawtooth
+    - swing
+- visual effects
+  - background, midground, foreground
+  - clouds
+  - rain
+  - snow
+  - leaves
+  - sunbeams
+  - insects
+  - birds
+  - pteranodon
+- achievements
+  - tiers of badges for all kinds of statistics
+
+- test with various browsers
+  - hide cursor on IE
 
 - precalculate trig functions
 - use a shim for requestAnimationFrame
