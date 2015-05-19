@@ -11,6 +11,7 @@
   + show prefixes while typing
   + hide input
 + pause on blur 
++ calculate update with absolute time
 
 - progression
   + advance to next level
@@ -29,7 +30,6 @@
   - current
   - average
 
-- calculate animations with absolute time
 - sway
   - keep it constant while chute speed increases
     -> otherwise it becomes difficult and nauseating to read the word

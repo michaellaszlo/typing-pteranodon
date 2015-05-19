@@ -1,6 +1,6 @@
 var TypingPteranodon = {
   layout: {
-    level: { font: { size: 24 }, padding: { left: 10, top: 2 } },
+    level: { font: { size: 24 }, padding: { left: 10, top: 3 } },
     chute: { width: 400, height: 500, left: 50, top: 40 },
     typing: { width: 300, height: 50 }
   },
@@ -10,7 +10,7 @@ var TypingPteranodon = {
     color: { target: '#222', correct: '#92a4b6' }
   },
   game: {
-    speed: { initial: 0.4, increment: 0.2 },
+    speed: { initial: 24, increment: 12 },
     level: { numWords: 3 }
   },
   dictionary: dictionary17870,
@@ -41,7 +41,6 @@ TypingPteranodon.makeLevel = function (levelIndex) {
 TypingPteranodon.nextLevel = function () {
   var g = TypingPteranodon;
   ++g.levelIndex;
-  g.debug.message('game', 'levelIndex: '+g.levelIndex);
   g.level = g.makeLevel(g.levelIndex);
   g.display.level.innerHTML = 'Level '+g.levelIndex;
   g.word.speed += g.game.speed.increment;
@@ -57,7 +56,6 @@ TypingPteranodon.nextWord = function () {
       word = g.word,
       wordIndex = ++g.wordIndex;
   if (wordIndex == level.numWords) {
-    g.debug.message('game', 'level completed');
     g.update.chute();
     g.nextLevel();
     return;
@@ -150,21 +148,24 @@ TypingPteranodon.startGame = function () {
   g.playing = true;
   g.nextLevel();
   g.resume();
+  g.startTime = performance.now();
+  g.frames = 0;
 }
 
 TypingPteranodon.resume = function () {
   var g = TypingPteranodon;
-  g.debug.message('game', 'resuming');
+  g.debug.message('event', 'resuming');
   g.chuteClicked = false;
   g.chute.className = '';
   g.input.focus();
   g.active = true;
+  g.previousTime = undefined;
   g.cycle();
 };
 
 TypingPteranodon.pause = function () {
   var g = TypingPteranodon;
-  g.debug.message('game', 'pausing');
+  g.debug.message('event', 'pausing');
   g.active = false;
   g.chute.className = 'paused';
 };
@@ -187,12 +188,10 @@ TypingPteranodon.cycle = function (time) {
 };
 
 TypingPteranodon.update.chute = function (time) {
-  var g = TypingPteranodon;
-  if (time === undefined) {
-    time = g.update.time;
-  } else {
-    g.update.time = time;
-  }
+  var g = TypingPteranodon,
+      timespan = (g.previousTime === undefined ? 0 : time - g.previousTime);
+  g.previousTime = time;
+  g.frames += 1;
   var word = g.word,
       currIndex = g.chute.index,
       nextIndex = (currIndex == 0 ? 1 : 0),
@@ -210,7 +209,7 @@ TypingPteranodon.update.chute = function (time) {
   chuteContext.translate(-centerX, -centerY);
   chuteContext.drawImage(word.canvas[g.prefixLength], word.x, word.y);
   chuteContext.setTransform(1, 0, 0, 1, 0, 0);
-  word.y += word.speed;
+  word.y += timespan/1000 * g.word.speed;
   if (word.y >= g.finishY) {
     g.debug.message('game',
         'incomplete: "'+g.input.value+'", target: "'+word.text+'"');
