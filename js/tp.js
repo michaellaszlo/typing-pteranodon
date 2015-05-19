@@ -198,11 +198,11 @@ TypingPteranodon.update.chute = function (time) {
       chuteCanvas = g.canvas.chute[nextIndex],
       context = g.context,
       chuteContext = context.chute[nextIndex];
-  var sway = 3*Math.sin(word.y/10);
+  var sway = 15*Math.sin(time/500);
   word.x = word.baseX - sway;
   var centerX = word.x + word.width/2,
       centerY = word.y - word.height/2,
-      angle = sway / 75;
+      angle = sway / 175;
   chuteContext.clearRect(0, 0, chuteCanvas.width, chuteCanvas.height);
   chuteContext.translate(centerX, centerY);
   chuteContext.rotate(angle);

@@ -31,7 +31,7 @@
   - average
 
 - sway
-  - keep it constant while chute speed increases
+  + keep swinging rate constant while chute speed increases
     -> otherwise it becomes difficult and nauseating to read the word
   - vary the sway parameters
   - introduce various types of sway
