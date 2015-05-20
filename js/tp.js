@@ -42,7 +42,7 @@ TypingPteranodon.nextLevel = function () {
   var g = TypingPteranodon;
   ++g.levelIndex;
   g.level = g.makeLevel(g.levelIndex);
-  g.display.level.innerHTML = 'Level '+g.levelIndex;
+  g.display.level.innerHTML = 'Level '+(g.levelIndex+1);
   g.word.speed += g.game.speed.increment;
   g.wordIndex = -1;
   g.nextWord();
@@ -143,7 +143,7 @@ TypingPteranodon.overpaint = function (baseContext, overContext,
 
 TypingPteranodon.startGame = function () {
   var g = TypingPteranodon;
-  g.levelIndex = 0;
+  g.levelIndex = -1;
   g.word = { speed: g.game.speed.initial - g.game.speed.increment };
   g.playing = true;
   g.nextLevel();
@@ -174,6 +174,9 @@ TypingPteranodon.finishGame = function () {
   var g = TypingPteranodon;
   g.active = false;
   g.playing = false;
+  var run = JSON.stringify({ level: g.levelIndex, word: g.wordIndex }),
+      bestRun = sessionStorage.getItem('bestRun');
+  console.log('run:', run, 'bestRun:', bestRun);
 };
 
 TypingPteranodon.cycle = function (time) {
