@@ -175,8 +175,16 @@ TypingPteranodon.finishGame = function () {
   g.active = false;
   g.playing = false;
   var run = JSON.stringify({ level: g.levelIndex, word: g.wordIndex }),
-      bestRun = sessionStorage.getItem('bestRun');
-  console.log('run:', run, 'bestRun:', bestRun);
+      history = sessionStorage.getItem('history');
+  if (history === undefined) {
+    history = { recent: [], best: run, previous: undefined };
+  }
+  if (g.runIsBetter(run, history.best)) {
+    history.best = run;
+  }
+  history.previous = run;
+  history.recent.push(run);
+  sessionStorage.setItem('history', JSON.stringify(history));
 };
 
 TypingPteranodon.cycle = function (time) {
