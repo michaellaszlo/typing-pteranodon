@@ -174,17 +174,31 @@ TypingPteranodon.finishGame = function () {
   var g = TypingPteranodon;
   g.active = false;
   g.playing = false;
-  var run = JSON.stringify({ level: g.levelIndex, word: g.wordIndex }),
-      history = sessionStorage.getItem('history');
-  if (history === undefined) {
-    history = { recent: [], best: run, previous: undefined };
+  // Calculate latest results.
+  var run = { level: g.levelIndex, word: g.wordIndex },
+      history = JSON.parse(localStorage.getItem('history'));
+  if (!history) {
+    history = {
+      recent: [],
+      best: { level: 0, word: 0 }
+    };
   }
-  if (g.runIsBetter(run, history.best)) {
+  console.log(JSON.stringify(history));
+  var recent = history.recent,
+      best = history.best;
+  if (run.level > best.level ||
+      (run.level == best.level && run.word > best.word)) {
     history.best = run;
+    console.log('New best!');
   }
-  history.previous = run;
-  history.recent.push(run);
-  sessionStorage.setItem('history', JSON.stringify(history));
+  // Display latest results.
+  console.log('run: '+JSON.stringify(run));
+  console.log('recent: '+JSON.stringify(recent));
+  // Store latest results.
+  if (recent.unshift(run) > 3) {
+    recent.pop();
+  }
+  localStorage.setItem('history', JSON.stringify(history));
 };
 
 TypingPteranodon.cycle = function (time) {
