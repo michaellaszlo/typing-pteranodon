@@ -58,6 +58,20 @@ h1 {
 }
 
 
+/*--- status ---*/
+
+.run .level {
+  padding-right: 5px;
+}
+.run .words {
+  letter-spacing: 2px;
+  color: #b5af94;
+}
+.run .words.completed {
+  color: #747142;
+}
+
+
 /*--- typing ---*/
 
 #typingInput {

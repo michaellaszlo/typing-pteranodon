@@ -42,7 +42,6 @@ TypingPteranodon.nextLevel = function () {
   var g = TypingPteranodon;
   ++g.levelIndex;
   g.level = g.makeLevel(g.levelIndex);
-  g.display.level.innerHTML = 'Level '+(g.levelIndex+1);
   g.word.speed += g.game.speed.increment;
   g.wordIndex = -1;
   g.nextWord();
@@ -50,11 +49,15 @@ TypingPteranodon.nextLevel = function () {
 
 TypingPteranodon.nextWord = function () {
   var g = TypingPteranodon,
-      level = g.level,
       canvas = g.canvas,
       context = g.context,
       word = g.word,
+      level = g.level,
+      levelIndex = g.levelIndex,
+      numWords = level.numWords,
       wordIndex = ++g.wordIndex;
+  g.display.level.innerHTML = g.makeRunString(
+      { wordIndex: wordIndex, numWords: numWords, levelIndex: levelIndex });
   if (wordIndex == level.numWords) {
     g.update.chute();
     g.nextLevel();
@@ -168,6 +171,32 @@ TypingPteranodon.pause = function () {
   g.debug.message('event', 'pausing');
   g.active = false;
   g.chute.className = 'paused';
+};
+
+// makeRunString takes a run, which is an internal representation of
+// the player's progress in a game, and generates an external representation
+// suitable for display.
+TypingPteranodon.makeRunString = function (run) {
+  var levelIndex = run.levelIndex,
+      wordIndex = run.wordIndex,
+      numWords = run.numWords,
+      parts = [];
+  parts.push('<span class="run">');
+  parts.push('<span class="level">'+(levelIndex+1)+'</span>');
+  parts.push('<span class="words completed">');
+  for (var i = 0; i < wordIndex; ++i) {
+    parts.push('&#x25cf;');
+  }
+  parts.push('</span>');  // End completed words.
+  parts.push('<span class="words">');
+  for (var i = wordIndex; i < numWords; ++i) {
+    parts.push('&#x25cf;');
+  }
+  parts.push('</span>');  // End remaining words.
+  parts.push('</span>');  // End run string.
+  var result = parts.join('');
+  console.log(result);
+  return result;
 };
 
 TypingPteranodon.finishGame = function () {
