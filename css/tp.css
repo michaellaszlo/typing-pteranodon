@@ -30,13 +30,6 @@ h1 {
 
 /*--- graphics ---*/
 
-.display {
-  position: fixed;
-  font-family: sans-serif;
-  background: #444;
-  color: #bbb;
-}
-
 #gameContainer {
   position: fixed;
   background: #fff;
@@ -60,15 +53,29 @@ h1 {
 
 /*--- status ---*/
 
+#status {
+  position: fixed;
+  font-family: sans-serif;
+}
+
+.run {
+  color: #b5af94;
+}
 .run .level {
   padding-right: 5px;
 }
 .run .words {
   letter-spacing: 2px;
-  color: #b5af94;
 }
 .run .words.completed {
   color: #747142;
+}
+
+
+/*--- review ---*/
+
+#review {
+  position: fixed;
 }
 
 

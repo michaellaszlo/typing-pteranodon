@@ -2,7 +2,8 @@ var TypingPteranodon = {
   layout: {
     level: { font: { size: 24 }, padding: { left: 10, top: 3 } },
     chute: { width: 400, height: 500, left: 50, top: 40 },
-    typing: { width: 300, height: 50 }
+    typing: { width: 300, height: 50 },
+    review: { left: 50 }
   },
   font: {
     face: 'sans-serif',
@@ -56,7 +57,7 @@ TypingPteranodon.nextWord = function () {
       levelIndex = g.levelIndex,
       numWords = level.numWords,
       wordIndex = ++g.wordIndex;
-  g.display.level.innerHTML = g.makeRunString(
+  g.status.level.innerHTML = g.makeRunString(
       { wordIndex: wordIndex, numWords: numWords, levelIndex: levelIndex });
   if (wordIndex == level.numWords) {
     g.update.chute();
@@ -195,7 +196,6 @@ TypingPteranodon.makeRunString = function (run) {
   parts.push('</span>');  // End remaining words.
   parts.push('</span>');  // End run string.
   var result = parts.join('');
-  console.log(result);
   return result;
 };
 
@@ -204,14 +204,9 @@ TypingPteranodon.finishGame = function () {
   g.active = false;
   g.playing = false;
   // Calculate latest results.
-  var run = { level: g.levelIndex, word: g.wordIndex },
+  var run = { wordIndex: g.wordIndex, numWords: g.level.numWords,
+              levelIndex: g.levelIndex },
       history = JSON.parse(localStorage.getItem('history'));
-  if (!history) {
-    history = {
-      recent: [],
-      best: { level: 0, word: 0 }
-    };
-  }
   console.log(JSON.stringify(history));
   var recent = history.recent,
       best = history.best;
@@ -321,8 +316,8 @@ TypingPteranodon.make = function (tag, options) {
 TypingPteranodon.load = function () {
   var g = TypingPteranodon,
       wrapper = g.make('div', { id: 'wrapper', into: document.body }),
-      display = g.display = {
-        level: g.make('div', { className: 'display', into: wrapper })
+      status = g.status = {
+        level: g.make('div', { id: 'status', into: wrapper })
       },
       chute = g.chute = g.make('div', { id: 'gameContainer', into: wrapper }),
       canvas = g.canvas = {
@@ -337,16 +332,16 @@ TypingPteranodon.load = function () {
       },
       input = g.input = g.make('input', { id: 'typingInput', into: wrapper }),
       layout = g.layout;
-  display.level.style.width = g.layout.chute.width -
+  status.level.style.width = g.layout.chute.width -
       g.layout.level.padding.left + 'px';
   g.layout.level.height = 1.4 * g.layout.level.font.size;
-  display.level.style.height = g.layout.level.height -
+  status.level.style.height = g.layout.level.height -
       g.layout.level.padding.top + 'px';
-  display.level.style.left = g.layout.chute.left + 'px';
-  display.level.style.top = g.layout.chute.top - g.layout.level.height + 'px';
-  display.level.style.paddingLeft = g.layout.level.padding.left + 'px';
-  display.level.style.paddingTop = g.layout.level.padding.top + 'px';
-  display.level.style.fontSize = g.layout.level.font.size + 'px';
+  status.level.style.left = g.layout.chute.left + 'px';
+  status.level.style.top = g.layout.chute.top - g.layout.level.height + 'px';
+  status.level.style.paddingLeft = g.layout.level.padding.left + 'px';
+  status.level.style.paddingTop = g.layout.level.padding.top + 'px';
+  status.level.style.fontSize = g.layout.level.font.size + 'px';
   canvas.stage.width = g.layout.chute.width;
   canvas.stage.height = Math.ceil(3.5*g.font.size.pixels);
   canvas.stage.style.display = 'none';
@@ -408,6 +403,27 @@ TypingPteranodon.load = function () {
       g.resume();
     }, 0);
   }
+
+  var review = g.review = {};
+  review.container = g.make('div', { id: 'review', into: wrapper });
+  review.container.style.left = layout.chute.left + layout.chute.width + 
+      layout.review.left + 'px';
+  review.container.style.top = layout.chute.top + 'px';
+  review.container.style.width = layout.chute.width + 'px';
+  review.container.style.height = layout.chute.height + 'px';
+  review.best = g.make('div', { id: 'best', into: review.container });
+  review.recent = g.make('div', { id: 'recent', into: review.container });
+
+  var history = JSON.parse(localStorage.getItem('history'));
+  if (!history) {
+    history = {
+      recent: [],
+      best: { wordIndex: -1, numWords: 0, levelIndex: -1 }
+    };
+  }
+  console.log(history.best);
+  review.best.innerHTML = g.makeRunString(history.best);
+  console.log(g.makeRunString(history.best));
 
   g.chute.index = 0;
   g.canvas.chute[1].style.visibility = 'hidden';

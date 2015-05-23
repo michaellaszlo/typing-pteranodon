@@ -12,23 +12,62 @@
   + hide input
 + pause on blur 
 + calculate update with absolute time
-
-- progression
++ progression
   + advance to next level
   + show level number
-  - show progress within level
-- restart button
+  + show progress within level
+
+- history
+  - longest run
+  - recent runs
+- mark and blur the bottom of the chute
+  - mark the threshold with a distinct line
+  - blur the portion below the line so that the word remains somewhat visible
+- blur the top of the chute with a gradient
+- make each level longer than the last? (Fibonacci?)
+- enable faster progression for fast typers? (for beating the midway point?)
+- reduce the chute height so that word speed doesn't become excessive?
+- restart without reload
+  - keys to restart quickly at end of game
+  - button to start game at any time
 - effects
   - failure: typo
   - failure: incomplete
   - completion: word
   - completion: level
-- history
-  - longest run
-  - recent runs
 - typing speed
   - current
-  - average
+  - recent
+  - average in a window of recent runs
+  - graph of average over time (smoothed by a window)
+- key statistics
+  - speed
+  - accuracy
+  - which wrong key
+  - per character
+  - per bigram
+  - per finger
+- game modes
+  - character on key
+  - character falling in column
+  - character running across row
+  - whole word falling through the chute
+  - whole sentences running across the chute
+- hazard warning
+  - highlight key combinations where you frequently trip up
+- evil mode
+  - a word suffix can change, forcing you to backspace and retype
+- targeted training
+  - choose a game mode
+  - choose a target speed to maintain as long as possible
+- testing
+  - complete a certain number of characters without a mistake
+- corpus selection
+  - mixed case
+  - punctuation
+  - type of text
+  - computer languages
+- variant keyboards
 
 - sway
   + keep swinging rate constant while chute speed increases
@@ -74,7 +113,8 @@ guiding principles:
   - stop rushing ahead and making errors
   - slow down when you're unsure
   - pause to contemplate the next key
-  - after a while, finding the right key will become second nature
+  - gradually the pause will grow shorter
+  - speed will increase as you maintain high accuracy
 - gamification
   - fun to play
   - interesting visual effects
