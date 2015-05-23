@@ -16,16 +16,16 @@
   + advance to next level
   + show level number
   + show progress within level
++ history
+  + best run
+  + recent runs
 
-- history
-  - longest run
-  - recent runs
 - mark and blur the bottom of the chute
   - mark the threshold with a distinct line
   - blur the portion below the line so that the word remains somewhat visible
 - blur the top of the chute with a gradient
 - make each level longer than the last? (Fibonacci?)
-- enable faster progression for fast typers? (for beating the midway point?)
+- enable faster progression for fast typers? (by beating the midway point?)
 - reduce the chute height so that word speed doesn't become excessive?
 - restart without reload
   - keys to restart quickly at end of game
@@ -79,6 +79,8 @@
     - squarish
     - sawtooth
     - swing
+  - precompute all images for performance and to calculate vertical bounds
+    - can we ensure that the top edge falls monotonically?
 - visual effects
   - background, midground, foreground
   - clouds

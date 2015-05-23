@@ -1,9 +1,8 @@
 var TypingPteranodon = {
   layout: {
-    level: { font: { size: 24 }, padding: { left: 10, top: 3 } },
     chute: { width: 400, height: 500, left: 50, top: 40 },
     typing: { width: 300, height: 50 },
-    review: { left: 50 }
+    status: { left: 50 }
   },
   font: {
     face: 'sans-serif',
@@ -14,12 +13,15 @@ var TypingPteranodon = {
     speed: { initial: 24, increment: 12 },
     level: { numWords: 3 }
   },
+  status: {
+    numRecent: 6
+  },
   dictionary: dictionary17870,
   update: {},
   debug: {
-    status: { game: true, event: false },
+    active: { game: true, event: false },
     message: function (flag, s) {
-      if (TypingPteranodon.debug.status[flag]) {
+      if (TypingPteranodon.debug.active[flag]) {
         console.log(s);
       }
     }
@@ -57,7 +59,7 @@ TypingPteranodon.nextWord = function () {
       levelIndex = g.levelIndex,
       numWords = level.numWords,
       wordIndex = ++g.wordIndex;
-  g.status.level.innerHTML = g.makeRunString(
+  g.status.current.innerHTML = g.makeRunString(
       { wordIndex: wordIndex, numWords: numWords, levelIndex: levelIndex });
   if (wordIndex == level.numWords) {
     g.update.chute();
@@ -76,7 +78,7 @@ TypingPteranodon.nextWord = function () {
       testHeight = canvas.stage.height,
       testData = context.stage.getImageData(0, 0, testWidth, testHeight).data;
   for (var i = 3; ; i += 4) {  // Seek forward for a non-transparent pixel.
-    if (testData[i] != 0) {
+    if (testData[i] !== 0) {
       var x = (i-3)/4,
           c = x % testWidth;
       word.firstRow = (x-c) / testWidth;
@@ -84,7 +86,7 @@ TypingPteranodon.nextWord = function () {
     }
   }
   for (var i = 4*testWidth*testHeight - 1; ; i -= 4) {  // Seek backward.
-    if (testData[i] != 0) {
+    if (testData[i] !== 0) {
       var x = (i-3)/4,
           c = x % testWidth;
       word.lastRow = (x-c) / testWidth;
@@ -131,7 +133,7 @@ TypingPteranodon.overpaint = function (baseContext, overContext,
       overImage = overContext.getImageData(0, 0, width, height),
       overData = overImage.data;
   for (var i = 4*width*height - 1; i != -1; i -= 4) {
-    if (overData[i] != 0) {
+    if (overData[i] !== 0) {
       baseData[i-3] = overData[i-3];
       baseData[i-2] = overData[i-2];
       baseData[i-1] = overData[i-1];
@@ -154,7 +156,7 @@ TypingPteranodon.startGame = function () {
   g.resume();
   g.startTime = performance.now();
   g.frames = 0;
-}
+};
 
 TypingPteranodon.resume = function () {
   var g = TypingPteranodon;
@@ -182,6 +184,9 @@ TypingPteranodon.makeRunString = function (run) {
       wordIndex = run.wordIndex,
       numWords = run.numWords,
       parts = [];
+  if (levelIndex == -1) {
+    return '';
+  }
   parts.push('<span class="run">');
   parts.push('<span class="level">'+(levelIndex+1)+'</span>');
   parts.push('<span class="words completed">');
@@ -189,9 +194,9 @@ TypingPteranodon.makeRunString = function (run) {
     parts.push('&#x25cf;');
   }
   parts.push('</span>');  // End completed words.
-  parts.push('<span class="words">');
+  parts.push('<span class="words remaining">');
   for (var i = wordIndex; i < numWords; ++i) {
-    parts.push('&#x25cf;');
+    parts.push('&#x25cb;');
   }
   parts.push('</span>');  // End remaining words.
   parts.push('</span>');  // End run string.
@@ -203,25 +208,27 @@ TypingPteranodon.finishGame = function () {
   var g = TypingPteranodon;
   g.active = false;
   g.playing = false;
-  // Calculate latest results.
   var run = { wordIndex: g.wordIndex, numWords: g.level.numWords,
               levelIndex: g.levelIndex },
-      history = JSON.parse(localStorage.getItem('history'));
-  console.log(JSON.stringify(history));
-  var recent = history.recent,
-      best = history.best;
-  if (run.level > best.level ||
-      (run.level == best.level && run.word > best.word)) {
+      history = JSON.parse(localStorage.getItem('history')),
+      recent = history.recent,
+      best = history.best,
+      status = g.status;
+  if (run.levelIndex > best.levelIndex ||
+      (run.levelIndex == best.levelIndex && run.wordIndex > best.wordIndex)) {
     history.best = run;
-    console.log('New best!');
   }
-  // Display latest results.
-  console.log('run: '+JSON.stringify(run));
-  console.log('recent: '+JSON.stringify(recent));
+  status.best.innerHTML = g.makeRunString(best);
   // Store latest results.
-  if (recent.unshift(run) > 3) {
+  if (recent.unshift(run) > g.status.numRecent) {
     recent.pop();
   }
+  status.best.innerHTML = g.makeRunString(history.best);
+  var parts = [];
+  for (var i = 0; i < status.numRecent && i < history.recent.length; ++i) {
+      parts.push(g.makeRunString(history.recent[i])+'<br />');
+  }
+  status.recent.innerHTML = parts.join('');
   localStorage.setItem('history', JSON.stringify(history));
 };
 
@@ -243,7 +250,7 @@ TypingPteranodon.update.chute = function (time) {
   g.frames += 1;
   var word = g.word,
       currIndex = g.chute.index,
-      nextIndex = (currIndex == 0 ? 1 : 0),
+      nextIndex = (currIndex === 0 ? 1 : 0),
       chuteCanvas = g.canvas.chute[nextIndex],
       context = g.context,
       chuteContext = context.chute[nextIndex];
@@ -300,14 +307,15 @@ TypingPteranodon.update.typing = function () {
 TypingPteranodon.make = function (tag, options) {
   var element = document.createElement(tag);
   if (options !== undefined) {
-    if (options.id !== undefined) {
-      element.id = options.id;
-    }
-    if (options.className !== undefined) {
-      element.className = options.className;
-    }
     if (options.into !== undefined) {
       options.into.appendChild(element);
+    }
+    var keys = ['id', 'className', 'innerHTML'];
+    for (var i = 0; i < keys.length; ++i) {
+      var key = keys[i];
+      if (options[key] !== undefined) {
+        element[key] = options[key];
+      }
     }
   }
   return element;
@@ -316,9 +324,7 @@ TypingPteranodon.make = function (tag, options) {
 TypingPteranodon.load = function () {
   var g = TypingPteranodon,
       wrapper = g.make('div', { id: 'wrapper', into: document.body }),
-      status = g.status = {
-        level: g.make('div', { id: 'status', into: wrapper })
-      },
+      input = g.input = g.make('input', { id: 'typingInput', into: wrapper }),
       chute = g.chute = g.make('div', { id: 'gameContainer', into: wrapper }),
       canvas = g.canvas = {
         stage: g.make('canvas', { into: wrapper }),
@@ -330,33 +336,21 @@ TypingPteranodon.load = function () {
         chute: [ canvas.chute[0].getContext('2d'),
                  canvas.chute[1].getContext('2d') ]
       },
-      input = g.input = g.make('input', { id: 'typingInput', into: wrapper }),
       layout = g.layout;
-  status.level.style.width = g.layout.chute.width -
-      g.layout.level.padding.left + 'px';
-  g.layout.level.height = 1.4 * g.layout.level.font.size;
-  status.level.style.height = g.layout.level.height -
-      g.layout.level.padding.top + 'px';
-  status.level.style.left = g.layout.chute.left + 'px';
-  status.level.style.top = g.layout.chute.top - g.layout.level.height + 'px';
-  status.level.style.paddingLeft = g.layout.level.padding.left + 'px';
-  status.level.style.paddingTop = g.layout.level.padding.top + 'px';
-  status.level.style.fontSize = g.layout.level.font.size + 'px';
-  canvas.stage.width = g.layout.chute.width;
+  canvas.stage.width = layout.chute.width;
   canvas.stage.height = Math.ceil(3.5*g.font.size.pixels);
   canvas.stage.style.display = 'none';
-  canvas.chute[1].width = canvas.chute[0].width = g.layout.chute.width;
-  canvas.chute[1].height = canvas.chute[0].height = g.layout.chute.height;
-  chute.style.width = g.layout.chute.width + 'px';
-  chute.style.height = g.layout.chute.height + 'px';
-  chute.style.left = g.layout.chute.left + 'px';
-  chute.style.top = g.layout.chute.top + 'px';
+  canvas.chute[1].width = canvas.chute[0].width = layout.chute.width;
+  canvas.chute[1].height = canvas.chute[0].height = layout.chute.height;
+  chute.style.width = layout.chute.width + 'px';
+  chute.style.height = layout.chute.height + 'px';
+  chute.style.left = layout.chute.left + 'px';
+  chute.style.top = layout.chute.top + 'px';
   input.style.left = chute.style.left = layout.chute.left + 'px';
   input.style.top = layout.chute.top + 'px';
   canvas.stage.style.position = 'fixed';
   canvas.stage.style.top = layout.chute.top + 'px';
-  canvas.stage.style.left = layout.chute.left + layout.chute.width +
-      5 + 'px';
+  canvas.stage.style.left = layout.chute.left + layout.chute.width + 5 + 'px';
   canvas.stage.style.border = '1px dotted #ddd';
 
   g.font.string = g.font.size.pixels + 'px ' + g.font.face;
@@ -402,17 +396,26 @@ TypingPteranodon.load = function () {
       g.debug.message('event', 'queuing resume');
       g.resume();
     }, 0);
-  }
+  };
 
-  var review = g.review = {};
-  review.container = g.make('div', { id: 'review', into: wrapper });
-  review.container.style.left = layout.chute.left + layout.chute.width + 
-      layout.review.left + 'px';
-  review.container.style.top = layout.chute.top + 'px';
-  review.container.style.width = layout.chute.width + 'px';
-  review.container.style.height = layout.chute.height + 'px';
-  review.best = g.make('div', { id: 'best', into: review.container });
-  review.recent = g.make('div', { id: 'recent', into: review.container });
+  // Set up display of run results: current, best, recent.
+  var status = g.status,
+      container = status.container = g.make('div', { id: 'status',
+          into: wrapper })
+  container.style.width = layout.chute.width + 'px';
+  container.style.height = layout.chute.height + 'px';
+  container.style.left = layout.chute.left + layout.chute.width +
+      layout.status.left + 'px';
+  container.style.top = layout.chute.top + 'px';
+  g.make('div', { className: 'label', into: container, innerHTML: 'current' });
+  status.current = g.make('div', { className: 'display current',
+      into: container });
+  g.make('div', { className: 'label', into: container, innerHTML: 'best' });
+  status.best = g.make('div', { className: 'display best',
+      into: container });
+  g.make('div', { className: 'label', into: container, innerHTML: 'recent' });
+  status.recent = g.make('div', { className: 'display recent',
+      into: container });
 
   var history = JSON.parse(localStorage.getItem('history'));
   if (!history) {
@@ -420,10 +423,14 @@ TypingPteranodon.load = function () {
       recent: [],
       best: { wordIndex: -1, numWords: 0, levelIndex: -1 }
     };
+    localStorage.setItem('history', JSON.stringify(history));
   }
-  console.log(history.best);
-  review.best.innerHTML = g.makeRunString(history.best);
-  console.log(g.makeRunString(history.best));
+  status.best.innerHTML = g.makeRunString(history.best);
+  var parts = [];
+  for (var i = 0; i < g.status.numRecent && i < history.recent.length; ++i) {
+      parts.push(g.makeRunString(history.recent[i])+'<br />');
+  }
+  status.recent.innerHTML = parts.join('');
 
   g.chute.index = 0;
   g.canvas.chute[1].style.visibility = 'hidden';

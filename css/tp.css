@@ -18,21 +18,13 @@ h1 {
   position: relative;
 }
 
-#stopwatch {
-  position: absolute;
-  top: 10px;
-  left: 380px;
-  font-weight: bold;
-  font-size: 18px;
-  color: #888;
-}
-
 
 /*--- graphics ---*/
 
 #gameContainer {
   position: fixed;
   background: #fff;
+  border-bottom: 2px solid #ddd;
 }
 #gameContainer.paused {
   background: #ddd;
@@ -58,24 +50,44 @@ h1 {
   font-family: sans-serif;
 }
 
-.run {
-  color: #b5af94;
+#status .label {
+  font-size: 18px;
+  color: #ccc;
 }
-.run .level {
+
+#status .display {
+  font-size: 24px;
+  padding: 5px 0 10px;
+}
+#status .display .level {
+  display: inline-block;
+  text-align: right;
+  width: 40px;
+}
+#status .display.current {
+  color: #658c63;
+}
+#status .display.current .words.remaining {
+  color: #b8d2b6;
+}
+#status .display.best {
+  color: #bbb589;
+}
+#status .display.best .words.remaining {
+  color: #d8d6c7;
+}
+#status .display.recent {
+  color: #aaa;
+}
+#status .display.recent .words.remaining {
+  color: #ddd;
+}
+
+#status .display .run .level {
   padding-right: 5px;
 }
-.run .words {
-  letter-spacing: 2px;
-}
-.run .words.completed {
-  color: #747142;
-}
-
-
-/*--- review ---*/
-
-#review {
-  position: fixed;
+#status .display .run .words {
+  letter-spacing: 1px;
 }
 
 
