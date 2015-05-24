@@ -20,13 +20,17 @@
   + best run
   + recent runs
 
-- mark and blur the bottom of the chute
-  - mark the threshold with a distinct line
-  - blur the portion below the line so that the word remains somewhat visible
-- blur the top of the chute with a gradient
-- make each level longer than the last? (Fibonacci?)
-- enable faster progression for fast typers? (by beating the midway point?)
-- reduce the chute height so that word speed doesn't become excessive?
+- aesthetic improvements
+  - mark and blur the bottom of the chute
+    - mark the threshold with a distinct line
+    - blur the portion below the line so that the word remains somewhat visible
+  - blur the top of the chute with a gradient
+  - add arrows for best and current runs
+- gameplay improvements
+  + pause between levels
+  + make each level longer than the last
+  - enable faster progression for fast typers? (by beating the midway point?)
+  - reduce the chute height so that word speed doesn't become excessive?
 - restart without reload
   - keys to restart quickly at end of game
   - button to start game at any time
@@ -68,6 +72,38 @@
   - type of text
   - computer languages
 - variant keyboards
+
+- give players a variety of things to do
+  - level progression
+    - formats
+    - corpora
+  - testing
+    - options
+    - corpora
+  - analysis
+    - over time
+    - by key, character, bigram, finger
+    - accuracy and speed
+      -> fastest bigram? most accurate bigram?
+  - training
+    - drills on keys, characters, bigrams, fingers
+    - special levels filled with drill sequences
+  - achievements
+    - badges for all kinds of statistical achievements
+      -> including consistent usage
+
+- how do we generate levels?
+  - corpus excerpts
+  - synthetic words
+
+- tournament mode
+  - generate the same levels for a group of contestants
+
+- teacher mode
+  - the teacher can monitor students' progress and administer tests
+
+- paid accounts
+  - more features, more statistics, remotely stored history
 
 - sway
   + keep swinging rate constant while chute speed increases

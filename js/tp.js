@@ -11,10 +11,10 @@ var TypingPteranodon = {
   },
   game: {
     speed: { initial: 24, increment: 12 },
-    level: { numWords: 3 }
+    delay: { level: 900, word: 300 }
   },
   status: {
-    numRecent: 6
+    numRecent: 8
   },
   dictionary: dictionary17870,
   update: {},
@@ -33,7 +33,7 @@ TypingPteranodon.makeLevel = function (levelIndex) {
       dictionary = g.dictionary,
       level = {},
       words = level.words = [],
-      numWords = level.numWords = g.game.level.numWords;
+      numWords = level.numWords = 2*levelIndex + 3;
   for (var i = 0; i < numWords; ++i) {
     var pos = Math.floor(Math.random() * dictionary.length);
     words.push(dictionary[pos]);
@@ -47,7 +47,11 @@ TypingPteranodon.nextLevel = function () {
   g.level = g.makeLevel(g.levelIndex);
   g.word.speed += g.game.speed.increment;
   g.wordIndex = -1;
-  g.nextWord();
+  if (g.levelIndex == 0) {
+    g.nextWord();
+  } else {
+    window.setTimeout(g.nextWord, g.game.delay.level);
+  }
 };
 
 TypingPteranodon.nextWord = function () {
@@ -300,7 +304,7 @@ TypingPteranodon.update.typing = function () {
   g.prefixLength += 1;
   if (g.prefixLength == target.length) {
     g.input.value = '';
-    g.nextWord();
+    window.setTimeout(g.nextWord, g.game.delay.word);
   }
 };
 
