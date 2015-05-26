@@ -1,6 +1,7 @@
 var TypingPteranodon = {
   layout: {
     chute: { width: 400, height: 500, left: 50, top: 40 },
+    blur: { height: 25 },
     typing: { width: 300, height: 50 },
     status: { left: 50 }
   },
@@ -11,7 +12,7 @@ var TypingPteranodon = {
   },
   game: {
     speed: { initial: 24, increment: 12 },
-    delay: { level: 900, word: 300 }
+    pause: { level: 100, word: 100 }
   },
   status: {
     numRecent: 8
@@ -50,7 +51,7 @@ TypingPteranodon.nextLevel = function () {
   if (g.levelIndex == 0) {
     g.nextWord();
   } else {
-    window.setTimeout(g.nextWord, g.game.delay.level);
+    window.setTimeout(g.nextWord, g.game.pause.level);
   }
 };
 
@@ -126,7 +127,7 @@ TypingPteranodon.nextWord = function () {
   g.prefixLength = 0;
 
   word.baseX = Math.floor((g.layout.chute.width - word.width) / 2);
-  word.y = 0;
+  word.y = -word.height;
 };
 
 TypingPteranodon.overpaint = function (baseContext, overContext,
@@ -304,7 +305,7 @@ TypingPteranodon.update.typing = function () {
   g.prefixLength += 1;
   if (g.prefixLength == target.length) {
     g.input.value = '';
-    window.setTimeout(g.nextWord, g.game.delay.word);
+    window.setTimeout(g.nextWord, g.game.pause.word);
   }
 };
 
@@ -332,8 +333,9 @@ TypingPteranodon.load = function () {
       chute = g.chute = g.make('div', { id: 'gameContainer', into: wrapper }),
       canvas = g.canvas = {
         stage: g.make('canvas', { into: wrapper }),
-        chute: [ g.make('canvas', { id: 'chute1', into: chute }),
-                  g.make('canvas', { id: 'chute2', into: chute }) ]
+        chute: [ g.make('canvas', { into: chute }),
+                  g.make('canvas', { into: chute }) ],
+        blur: g.make('canvas', { into: chute })
       },
       context = g.context = {
         stage: canvas.stage.getContext('2d'),
@@ -356,6 +358,16 @@ TypingPteranodon.load = function () {
   canvas.stage.style.top = layout.chute.top + 'px';
   canvas.stage.style.left = layout.chute.left + layout.chute.width + 5 + 'px';
   canvas.stage.style.border = '1px dotted #ddd';
+
+  // Decorative layer over the main canvas.
+  canvas.blur.width = layout.chute.width;
+  canvas.blur.height = layout.chute.height;
+  var blurContext = canvas.blur.getContext('2d'),
+      gradient = blurContext.createLinearGradient(0, 0, 0, layout.blur.height);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 255)');
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  blurContext.fillStyle = gradient;
+  blurContext.fillRect(0, 0, layout.chute.width, layout.blur.height);
 
   g.font.string = g.font.size.pixels + 'px ' + g.font.face;
   context.stage.font = context.chute[1].font = context.chute[0].font =
