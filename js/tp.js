@@ -12,7 +12,8 @@ var TypingPteranodon = {
   },
   game: {
     speed: { initial: 24, increment: 12 },
-    pause: { level: 100, word: 100 }
+    pause: { level: 100, word: 100 },
+    level: { size: { initial: 1, increment: 1 } }
   },
   status: {
     numRecent: 8
@@ -34,7 +35,8 @@ TypingPteranodon.makeLevel = function (levelIndex) {
       dictionary = g.dictionary,
       level = {},
       words = level.words = [],
-      numWords = level.numWords = 2*levelIndex + 3;
+      size = g.game.level.size,
+      numWords = level.numWords = size.initial + levelIndex*size.increment;
   for (var i = 0; i < numWords; ++i) {
     var pos = Math.floor(Math.random() * dictionary.length);
     words.push(dictionary[pos]);
@@ -330,12 +332,13 @@ TypingPteranodon.load = function () {
   var g = TypingPteranodon,
       wrapper = g.make('div', { id: 'wrapper', into: document.body }),
       input = g.input = g.make('input', { id: 'typingInput', into: wrapper }),
-      chute = g.chute = g.make('div', { id: 'gameContainer', into: wrapper }),
+      container = g.chute = g.make('div', { id: 'container', into: wrapper }),
       canvas = g.canvas = {
         stage: g.make('canvas', { into: wrapper }),
-        chute: [ g.make('canvas', { into: chute }),
-                  g.make('canvas', { into: chute }) ],
-        blur: g.make('canvas', { into: chute })
+        chute: [ g.make('canvas', { into: container }),
+                  g.make('canvas', { into: container }) ],
+        blur: g.make('canvas', { into: container }),
+        click: g.make('canvas', { into: container })
       },
       context = g.context = {
         stage: canvas.stage.getContext('2d'),
@@ -343,16 +346,20 @@ TypingPteranodon.load = function () {
                  canvas.chute[1].getContext('2d') ]
       },
       layout = g.layout;
-  canvas.stage.width = layout.chute.width;
+  canvas.chute0 = canvas.chute[0];
+  canvas.chute1 = canvas.chute[1];
+  ['stage', 'chute0', 'chute1', 'blur', 'click'].forEach(
+      function (name) {
+        canvas[name].width = layout.chute.width;
+        canvas[name].height = layout.chute.height;
+      });
   canvas.stage.height = Math.ceil(3.5*g.font.size.pixels);
   canvas.stage.style.display = 'none';
-  canvas.chute[1].width = canvas.chute[0].width = layout.chute.width;
-  canvas.chute[1].height = canvas.chute[0].height = layout.chute.height;
-  chute.style.width = layout.chute.width + 'px';
-  chute.style.height = layout.chute.height + 'px';
-  chute.style.left = layout.chute.left + 'px';
-  chute.style.top = layout.chute.top + 'px';
-  input.style.left = chute.style.left = layout.chute.left + 'px';
+  container.style.width = layout.chute.width + 'px';
+  container.style.height = layout.chute.height + 'px';
+  container.style.left = layout.chute.left + 'px';
+  container.style.top = layout.chute.top + 'px';
+  input.style.left = container.style.left = layout.chute.left + 'px';
   input.style.top = layout.chute.top + 'px';
   canvas.stage.style.position = 'fixed';
   canvas.stage.style.top = layout.chute.top + 'px';
@@ -360,8 +367,6 @@ TypingPteranodon.load = function () {
   canvas.stage.style.border = '1px dotted #ddd';
 
   // Decorative layer over the main canvas.
-  canvas.blur.width = layout.chute.width;
-  canvas.blur.height = layout.chute.height;
   var blurContext = canvas.blur.getContext('2d'),
       gradient = blurContext.createLinearGradient(0, 0, 0, layout.blur.height);
   gradient.addColorStop(0, 'rgba(255, 255, 255, 255)');
@@ -393,7 +398,7 @@ TypingPteranodon.load = function () {
     g.pause();
   };
 
-  canvas.chute[1].onmousedown = canvas.chute[0].onmousedown = function () {
+  canvas.click.onmousedown = function () {
     g.debug.message('event', 'chute click on '+this.id);
     if (!g.playing) {
       g.debug.message('not playing');
@@ -416,22 +421,21 @@ TypingPteranodon.load = function () {
 
   // Set up display of run results: current, best, recent.
   var status = g.status,
-      container = status.container = g.make('div', { id: 'status',
-          into: wrapper })
-  container.style.width = layout.chute.width + 'px';
-  container.style.height = layout.chute.height + 'px';
-  container.style.left = layout.chute.left + layout.chute.width +
+      display = g.make('div', { id: 'status', into: wrapper });
+  display.style.width = layout.chute.width + 'px';
+  display.style.height = layout.chute.height + 'px';
+  display.style.left = layout.chute.left + layout.chute.width +
       layout.status.left + 'px';
-  container.style.top = layout.chute.top + 'px';
-  g.make('div', { className: 'label', into: container, innerHTML: 'current' });
+  display.style.top = layout.chute.top + 'px';
+  g.make('div', { className: 'label', into: display, innerHTML: 'current' });
   status.current = g.make('div', { className: 'display current',
-      into: container });
-  g.make('div', { className: 'label', into: container, innerHTML: 'best' });
+      into: display });
+  g.make('div', { className: 'label', into: display, innerHTML: 'best' });
   status.best = g.make('div', { className: 'display best',
-      into: container });
-  g.make('div', { className: 'label', into: container, innerHTML: 'recent' });
+      into: display });
+  g.make('div', { className: 'label', into: display, innerHTML: 'recent' });
   status.recent = g.make('div', { className: 'display recent',
-      into: container });
+      into: display });
 
   var history = JSON.parse(localStorage.getItem('history'));
   if (!history) {

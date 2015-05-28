@@ -21,22 +21,22 @@ h1 {
 
 /*--- graphics ---*/
 
-#gameContainer {
+#container {
   position: fixed;
   background: #fff;
   border-bottom: 2px solid #ddd;
 }
-#gameContainer.paused {
+#container.paused {
   background: #ddd;
   opacity: 0.3;
 }
-#gameContainer.failed {
+#container.failed {
   background: #fee;
 }
-#gameContainer.cleared {
+#container.cleared {
   background: #ffe;
 }
-#gameContainer canvas {
+#container canvas {
   position: absolute;
   left: 0;
   top: 0;
