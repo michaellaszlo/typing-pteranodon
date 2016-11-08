@@ -3,7 +3,7 @@
 ## Type the word before it falls to the bottom
 
 Words drift down like individual snowflakes. You must type each word
-before it reaches the bottom. If you mistype a letter, the game ends.
+before it falls out of sight. If you mistype a letter, the game ends.
 
 To start a new game, reload the page (Ctrl-R). If you're in the middle of
 a game and the page loses focus because you clicked on another window,

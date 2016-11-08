@@ -20,7 +20,7 @@ var Wordfall = (function () {
       },
       dictionary = dictionary17870,
       debug = {
-        active: { game: true, event: false },
+        active: { game: true, event: true },
         message: function (flag, s) {
           if (debug.active[flag]) {
             console.log(s);
@@ -177,6 +177,12 @@ var Wordfall = (function () {
     chute.className = 'paused';
   }
 
+  function blur() {
+    debug.message('event', 'blurring');
+    status.active = false;
+    chute.className = 'blurred';
+  }
+
   // makeRunString takes a run, which is an internal representation of
   // the player's progress in a game, and generates an external representation
   // suitable for display.
@@ -208,7 +214,6 @@ var Wordfall = (function () {
   function finishGame() {
     var history, recent, best, run,
         parts, i;
-    status.active = false;
     status.playing = false;
     history = JSON.parse(localStorage.getItem('history'));
     recent = history.recent;
@@ -237,7 +242,7 @@ var Wordfall = (function () {
   }
 
   function cycle(time) {
-    if (!status.active) {
+    if (!status.playing) {
       return;
     }
     if (time !== undefined) {
@@ -290,11 +295,6 @@ var Wordfall = (function () {
     }
     target = word.text;
     attempt = input.value;
-    if (attempt.length > target.length) {
-      debug.message('game', 'program error: input overflow');
-      pause();
-      return;
-    }
     for (i = 0; i < attempt.length; ++i) {
       if (attempt.charAt(i) != target.charAt(i)) {
         debug.message('game',
@@ -395,7 +395,7 @@ var Wordfall = (function () {
         input.focus();
         return;
       }
-      pause();
+      blur();
     };
     canvas.click.onmousedown = function () {
       debug.message('event', 'chute click on '+this.id);

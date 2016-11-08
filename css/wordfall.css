@@ -26,9 +26,9 @@ h1 {
   background: #fff;
   border-bottom: 2px solid #ddd;
 }
-#container.paused {
-  background: #ddd;
-  opacity: 0.3;
+#container.blurred {
+  background: #eee;
+  opacity: 0.5;
 }
 #container.failed {
   background: #fee;
