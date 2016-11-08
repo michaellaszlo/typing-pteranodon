@@ -172,13 +172,17 @@ var Wordfall = (function () {
     status.chuteClicked = false;
     chute.className = '';
     input.focus();
+    context.click.clearRect(0, 0, canvas.click.width, canvas.click.height);
     status.updateTime = undefined;
     cycle();
   }
 
   function blur() {
+    var text = 'Click to resume typing.';
     debug.message('event', 'blurring');
-    display.show('Focus lost. Click on chute to resume typing.');
+    context.click.fillText(text,
+        (canvas.click.width - context.click.measureText(text).width) / 2,
+        canvas.click.height / 2);
     chute.className = 'blurred';
   }
 
@@ -333,15 +337,16 @@ var Wordfall = (function () {
     chute = container = make('div', { id: 'container', into: wrapper });
     canvas = {
       stage: make('canvas', { into: wrapper }),
-      chute: [ make('canvas', { into: container }),
-                make('canvas', { into: container }) ],
-      fade: make('canvas', { into: container }),
+      chute: [ make('canvas', { className: 'chute', into: container }),
+                make('canvas', { className: 'chute', into: container }) ],
+      fade: make('canvas', { className: 'fade', into: container }),
       click: make('canvas', { into: container })
     };
     context = {
       stage: canvas.stage.getContext('2d'),
       chute: [ canvas.chute[0].getContext('2d'),
-               canvas.chute[1].getContext('2d') ]
+               canvas.chute[1].getContext('2d') ],
+      click: canvas.click.getContext('2d')
     };
     canvas.chute0 = canvas.chute[0];
     canvas.chute1 = canvas.chute[1];
@@ -373,6 +378,8 @@ var Wordfall = (function () {
     font.string = font.size.pixels + 'px ' + font.face;
     context.stage.font = context.chute[1].font = context.chute[0].font =
         font.string;
+    context.click.font = 1.1 * font.size.pixels + 'px ' + font.face;
+    context.click.fillStyle = '#333';
     font.base = {
       left: Math.floor(font.size.pixels/2),
       top: 2*font.size.pixels
