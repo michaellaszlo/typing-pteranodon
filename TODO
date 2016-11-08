@@ -21,14 +21,15 @@
   + recent runs
 
 - aesthetic improvements
+  + blur the top of the chute with a gradient
   - mark and blur the bottom of the chute
     - mark the threshold with a distinct line
     - blur the portion below the line so that the word remains somewhat visible
-  + blur the top of the chute with a gradient
   - add arrows for best and current runs
 - gameplay improvements
   + pause between levels
   + make each level longer than the last
+  - message between levels
   - enable faster progression for fast typers? (by beating the midway point?)
   - reduce the chute height so that word speed doesn't become excessive?
 - restart without reload
