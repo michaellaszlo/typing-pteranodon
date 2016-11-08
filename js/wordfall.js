@@ -172,18 +172,27 @@ var Wordfall = (function () {
     status.chuteClicked = false;
     chute.className = '';
     input.focus();
-    context.click.clearRect(0, 0, canvas.click.width, canvas.click.height);
+    overlayMessage();
     status.updateTime = undefined;
     cycle();
   }
 
-  function blur() {
-    var text = 'Click to resume typing.';
-    debug.message('event', 'blurring');
+  function overlayMessage(text, fillStyle) {
+    context.click.clearRect(0, 0, canvas.click.width, canvas.click.height);
+    if (text === undefined) {
+      return;
+    }
+    context.click.fillStyle = (fillStyle === undefined ? '#333' : fillStyle);
     context.click.fillText(text,
         (canvas.click.width - context.click.measureText(text).width) / 2,
         canvas.click.height / 2);
+  }
+
+  function blur() {
+    var text;
+    debug.message('event', 'blurring');
     chute.className = 'blurred';
+    overlayMessage('Click to resume typing.');
   }
 
   // makeRunString takes a run, which is an internal representation of
@@ -217,7 +226,11 @@ var Wordfall = (function () {
   function finishGame() {
     var history, recent, best, run,
         parts, i;
+    if (!status.playing) {
+      return;
+    }
     status.playing = false;
+    overlayMessage('Game over.', '#888');
     history = JSON.parse(localStorage.getItem('history'));
     recent = history.recent;
     best = history.best;
@@ -293,6 +306,9 @@ var Wordfall = (function () {
   function updateTyping() {
     var target, attempt,
         i;
+    if (!status.playing) {
+      return;
+    }
     target = word.text;
     attempt = input.value;
     for (i = 0; i < attempt.length; ++i) {
@@ -379,7 +395,6 @@ var Wordfall = (function () {
     context.stage.font = context.chute[1].font = context.chute[0].font =
         font.string;
     context.click.font = 1.1 * font.size.pixels + 'px ' + font.face;
-    context.click.fillStyle = '#333';
     font.base = {
       left: Math.floor(font.size.pixels/2),
       top: 2*font.size.pixels
