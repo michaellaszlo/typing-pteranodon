@@ -1,7 +1,7 @@
 var Wordfall = (function () {
   var layout = {
         chute: { width: 400, height: 500, left: 50, top: 40 },
-        blur: { height: 25 },
+        fade: { height: 25 },
         typing: { width: 300, height: 50 },
         status: { left: 50 }
       },
@@ -15,8 +15,13 @@ var Wordfall = (function () {
         pause: { level: 100, word: 100 },
         level: { size: { initial: 1, increment: 1 } }
       },
+      display = {
+        recentMax: 10,
+        show: function (s) {
+          display.message.innerHTML = s;
+        }
+      },
       status = {
-        numRecent: 8
       },
       dictionary = dictionary17870,
       debug = {
@@ -62,8 +67,9 @@ var Wordfall = (function () {
         length, prefix, prefixContext,
         result,
         numWords = level.numWords;
+    input.value = '';
     ++wordIndex;
-    status.current.innerHTML = makeRunString(
+    display.current.innerHTML = makeRunString(
         { wordIndex: wordIndex, numWords: numWords, levelIndex: levelIndex });
     if (wordIndex == level.numWords) {
       updateChute();
@@ -166,20 +172,13 @@ var Wordfall = (function () {
     status.chuteClicked = false;
     chute.className = '';
     input.focus();
-    status.active = true;
     status.updateTime = undefined;
     cycle();
   }
 
-  function pause() {
-    debug.message('event', 'pausing');
-    status.active = false;
-    chute.className = 'paused';
-  }
-
   function blur() {
     debug.message('event', 'blurring');
-    status.active = false;
+    display.show('Focus lost. Click on chute to resume typing.');
     chute.className = 'blurred';
   }
 
@@ -227,17 +226,17 @@ var Wordfall = (function () {
         (levelIndex == levelIndex && wordIndex > best.wordIndex)) {
       history.best = run;
     }
-    status.best.innerHTML = makeRunString(best);
+    display.best.innerHTML = makeRunString(best);
     // Store latest results.
-    if (recent.unshift(run) > status.numRecent) {
+    if (recent.unshift(run) > display.recentMax) {
       recent.pop();
     }
-    status.best.innerHTML = makeRunString(history.best);
+    display.best.innerHTML = makeRunString(history.best);
     parts = [];
-    for (i = 0; i < status.numRecent && i < history.recent.length; ++i) {
+    for (i = 0; i < display.recentMax && i < history.recent.length; ++i) {
         parts.push(makeRunString(history.recent[i])+'<br>');
     }
-    status.recent.innerHTML = parts.join('');
+    display.recent.innerHTML = parts.join('');
     localStorage.setItem('history', JSON.stringify(history));
   }
 
@@ -290,9 +289,6 @@ var Wordfall = (function () {
   function updateTyping() {
     var target, attempt,
         i;
-    if (!status.active) {
-      return;
-    }
     target = word.text;
     attempt = input.value;
     for (i = 0; i < attempt.length; ++i) {
@@ -306,7 +302,6 @@ var Wordfall = (function () {
     }
     prefixLength += 1;
     if (prefixLength == target.length) {
-      input.value = '';
       setTimeout(nextWord, game.pause.word);
     }
   }
@@ -331,8 +326,8 @@ var Wordfall = (function () {
 
   function load() {
     var container,
-        blurContext, gradient,
-        display, history,
+        fadeContext, gradient,
+        displayBox, history,
         wrapper = make('div', { id: 'wrapper', into: document.body });
     input = make('input', { id: 'typingInput', into: wrapper });
     chute = container = make('div', { id: 'container', into: wrapper });
@@ -340,7 +335,7 @@ var Wordfall = (function () {
       stage: make('canvas', { into: wrapper }),
       chute: [ make('canvas', { into: container }),
                 make('canvas', { into: container }) ],
-      blur: make('canvas', { into: container }),
+      fade: make('canvas', { into: container }),
       click: make('canvas', { into: container })
     };
     context = {
@@ -350,7 +345,7 @@ var Wordfall = (function () {
     };
     canvas.chute0 = canvas.chute[0];
     canvas.chute1 = canvas.chute[1];
-    [ 'stage', 'chute0', 'chute1', 'blur', 'click' ].forEach(function (name) {
+    [ 'stage', 'chute0', 'chute1', 'fade', 'click' ].forEach(function (name) {
       canvas[name].width = layout.chute.width;
       canvas[name].height = layout.chute.height;
     });
@@ -368,12 +363,12 @@ var Wordfall = (function () {
     canvas.stage.style.border = '1px dotted #ddd';
 
     // Decorative layer over the main canvas.
-    blurContext = canvas.blur.getContext('2d');
-    gradient = blurContext.createLinearGradient(0, 0, 0, layout.blur.height);
+    fadeContext = canvas.fade.getContext('2d');
+    gradient = fadeContext.createLinearGradient(0, 0, 0, layout.fade.height);
     gradient.addColorStop(0, 'rgba(255, 255, 255, 255)');
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    blurContext.fillStyle = gradient;
-    blurContext.fillRect(0, 0, layout.chute.width, layout.blur.height);
+    fadeContext.fillStyle = gradient;
+    fadeContext.fillRect(0, 0, layout.chute.width, layout.fade.height);
 
     font.string = font.size.pixels + 'px ' + font.face;
     context.stage.font = context.chute[1].font = context.chute[0].font =
@@ -384,11 +379,11 @@ var Wordfall = (function () {
     };
     input.oninput = updateTyping;
     input.onblur = function () {
-      debug.message('event', 'blur');
-      if (!status.active) {
-        debug.message('event', 'not active');
+      if (!status.playing) {
+        debug.message('not playing');
         return;
       }
+      debug.message('event', 'blur');
       if (status.chuteClicked) {
         debug.message('event', 'refocusing because the chute was clicked');
         status.chuteClicked = false;
@@ -398,7 +393,7 @@ var Wordfall = (function () {
       blur();
     };
     canvas.click.onmousedown = function () {
-      debug.message('event', 'chute click on '+this.id);
+      debug.message('event', 'chute click');
       if (!status.playing) {
         debug.message('not playing');
         return;
@@ -408,10 +403,6 @@ var Wordfall = (function () {
         return;
       }
       status.chuteClicked = true;
-      if (status.active) {
-        debug.message('event', 'already active');
-        return;
-      }
       setTimeout(function () {
         debug.message('event', 'queuing resume');
         resume();
@@ -419,21 +410,22 @@ var Wordfall = (function () {
     };
 
     // Set up display of run results: current, best, recent.
-    display = make('div', { id: 'status', into: wrapper });
-    display.style.width = layout.chute.width + 'px';
-    display.style.height = layout.chute.height + 'px';
-    display.style.left = layout.chute.left + layout.chute.width +
+    displayBox = make('div', { id: 'status', into: wrapper });
+    displayBox.style.width = layout.chute.width + 'px';
+    displayBox.style.height = layout.chute.height + 'px';
+    displayBox.style.left = layout.chute.left + layout.chute.width +
         layout.status.left + 'px';
-    display.style.top = layout.chute.top + 'px';
-    make('div', { className: 'label', into: display, innerHTML: 'current' });
-    status.current = make('div', { className: 'display current',
-        into: display });
-    make('div', { className: 'label', into: display, innerHTML: 'best' });
-    status.best = make('div', { className: 'display best',
-        into: display });
-    make('div', { className: 'label', into: display, innerHTML: 'recent' });
-    status.recent = make('div', { className: 'display recent',
-        into: display });
+    displayBox.style.top = layout.chute.top + 'px';
+    make('div', { className: 'label', into: displayBox, innerHTML: 'current' });
+    display.current = make('div', { className: 'display current',
+        into: displayBox });
+    make('div', { className: 'label', into: displayBox, innerHTML: 'best' });
+    display.best = make('div', { className: 'display best',
+        into: displayBox });
+    make('div', { className: 'label', into: displayBox, innerHTML: 'recent' });
+    display.recent = make('div', { className: 'display recent',
+        into: displayBox });
+    display.message = make('div', { className: 'message', into: displayBox });
 
     history = JSON.parse(localStorage.getItem('history'));
     if (!history) {
@@ -443,12 +435,12 @@ var Wordfall = (function () {
       };
       localStorage.setItem('history', JSON.stringify(history));
     }
-    status.best.innerHTML = makeRunString(history.best);
+    display.best.innerHTML = makeRunString(history.best);
     var parts = [];
-    for (var i = 0; i < status.numRecent && i < history.recent.length; ++i) {
+    for (var i = 0; i < display.recentMax && i < history.recent.length; ++i) {
         parts.push(makeRunString(history.recent[i])+'<br>');
     }
-    status.recent.innerHTML = parts.join('');
+    display.recent.innerHTML = parts.join('');
 
     chute.index = 0;
     canvas.chute[1].style.visibility = 'hidden';
