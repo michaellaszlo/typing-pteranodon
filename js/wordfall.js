@@ -161,7 +161,6 @@ var Wordfall = (function () {
   function startGame() {
     levelIndex = -1;
     word = { speed: game.speed.initial - game.speed.increment };
-    status.playing = true;
     nextLevel();
     resume();
     status.frames = 0;
@@ -169,12 +168,12 @@ var Wordfall = (function () {
 
   function resume() {
     debug.message('event', 'resuming');
-    status.chuteClicked = false;
-    chute.className = '';
-    input.focus();
     overlayMessage();
+    chute.className = '';
     status.updateTime = undefined;
+    status.playing = true;
     cycle();
+    input.focus();
   }
 
   function overlayMessage(text, fillStyle) {
@@ -193,6 +192,7 @@ var Wordfall = (function () {
     debug.message('event', 'blurring');
     chute.className = 'blurred';
     overlayMessage('Click to resume typing.');
+    input.focus();
   }
 
   // makeRunString takes a run, which is an internal representation of
@@ -230,7 +230,7 @@ var Wordfall = (function () {
       return;
     }
     status.playing = false;
-    overlayMessage('Game over.', '#888');
+    overlayMessage('Click to try again.', '#888');
     history = JSON.parse(localStorage.getItem('history'));
     recent = history.recent;
     best = history.best;
@@ -416,15 +416,16 @@ var Wordfall = (function () {
     };
     canvas.click.onmousedown = function () {
       debug.message('event', 'chute click');
-      if (!status.playing) {
-        debug.message('not playing');
-        return;
-      }
       if (status.chuteClicked) {
         debug.message('event', 'a chute click is already being handled');
         return;
       }
       status.chuteClicked = true;
+      if (!status.playing) {
+        debug.message('game', 'starting a new game');
+        startGame();
+        return;
+      }
       setTimeout(function () {
         debug.message('event', 'queuing resume');
         resume();
